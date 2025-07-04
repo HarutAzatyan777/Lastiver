@@ -148,6 +148,7 @@
     flex-direction: column;
     align-items: flex-start;
   }
+  
 
   .qr-menu-items {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
