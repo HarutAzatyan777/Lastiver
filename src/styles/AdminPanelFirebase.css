@@ -1,0 +1,115 @@
+/* ======= Admin Panel Styles ======= */
+
+.admin-panel {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #fafafa;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #ddd;
+  font-family: sans-serif;
+}
+
+.admin-panel h2 {
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+.admin-panel input,
+.admin-panel select {
+  width: 100%;
+  margin-bottom: 0.8rem;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.admin-panel hr {
+  margin: 1.5rem 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+
+/* ======= ActionButton style ======= */
+
+.admin-panel button {
+  background: #444;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.admin-panel button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+.admin-panel button:hover:not(:disabled) {
+  background: #222;
+}
+
+/* Highlight edit/cancel buttons differently if you want */
+.admin-panel button[title*="Խմբագրել"],
+.admin-panel button[title*="Թարմացնել"] {
+  background: #007bff;
+}
+
+.admin-panel button[title*="Ջնջել"] {
+  background: #dc3545;
+}
+
+.admin-panel button[title*="Չեղարկել"] {
+  background: #6c757d;
+}
+
+/* Reorder buttons inline */
+.reorder-buttons {
+  margin-left: 10px;
+}
+
+/* ======= List styles ======= */
+
+.admin-panel ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.admin-panel li {
+  background: #fff;
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-panel li img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.admin-panel li span {
+  flex: 1;
+}
+
+/* Small improvements for mobile */
+@media (max-width: 600px) {
+  .admin-panel {
+    padding: 1rem;
+  }
+
+  .admin-panel button {
+    margin-bottom: 0.3rem;
+  }
+}

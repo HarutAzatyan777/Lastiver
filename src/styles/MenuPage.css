@@ -1,0 +1,133 @@
+.qr-menu-page {
+    font-family: 'Georgia', serif;
+    background-color: #0e1a2b;
+    padding: 2rem;
+    min-height: 100vh;
+    color: #ecf0f1;
+    box-sizing: border-box;
+  }
+  
+  .qr-menu-page h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #d0e1ff;
+  }
+  
+  .qr-menu-section {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    border-left: 5px solid #395886;
+  }
+  
+  .qr-menu-section h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #2c3e50;
+    padding-bottom: 0.3rem;
+    color: #a5c8ff;
+  }
+  
+  .qr-menu-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .qr-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    transition: background-color 0.2s, transform 0.2s;
+    padding: 10px;
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+  
+  .qr-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+  }
+  
+  .qr-menu-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #3a506b;
+  }
+  
+  .qr-menu-item span {
+    font-size: 1rem;
+    color: #d6e0f0;
+    word-break: break-word;
+  }
+  .menu-info {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #d0e1ff;
+    text-align: center;
+    font-family: 'Georgia', serif;
+    border-top: 1px solid #395886;
+    border-radius: 12px;
+    line-height: 1.6;
+  }
+  
+  .menu-info p {
+    margin: 0.5rem 0;
+  }
+  
+  
+  /* ✅ Մոբայլի համար ադապտացված ոճեր */
+  @media (max-width: 600px) {
+    .qr-menu-page {
+      padding: 1rem;
+    }
+  
+    .qr-menu-page h2 {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+  
+    .qr-menu-section {
+      padding: 1rem;
+    }
+  
+    .qr-menu-section h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.7rem;
+    }
+  
+    .qr-menu-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  
+    .qr-menu-item img {
+      width: 100%;
+      max-height: 200px;
+      height: auto;
+      border-radius: 6px;
+    }
+  
+    .qr-menu-item span {
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .menu-info {
+        padding: 1rem;
+        font-size: 0.95rem;
+        border-radius: 10px;
+      }
+    
+      .menu-info p {
+        margin: 0.4rem 0;
+      }
+  }
+  
