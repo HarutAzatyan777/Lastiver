@@ -1,45 +1,75 @@
-// QrMenuPage.jsx
-
 import { useState, useEffect } from "react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase";
 import "../styles/QrMenuPage.css";
+import Nav from "../components/Nav";
+import ScrollToTop from "../components/ScrollToTop";
+
+/* ----- Օգնական ֆունկցիա slugify-ի համար ----- */
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "")
+    .replace(/--+/g, "-");
+}
 
 /* ----- MenuSection Subcomponent ----- */
 function MenuSection({ section, index }) {
+  const sectionId = slugify(section.category);
+
   return (
     <div
+      id={sectionId}
       className="qr-menu-section fade-in"
-      style={{ animationDelay: `${index * 100}ms` }}
+      style={{
+        animationDelay: `${index * 100}ms`,
+        backgroundImage: section.itemsBackgroundUrl
+          ? `url(${section.itemsBackgroundUrl})`
+          : "none",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
     >
-      {section.imageUrl && (
-        <img
-          src={section.imageUrl}
-          alt={section.category}
-          className="section-image"
-          style={{
-            width: "100%",
-            maxWidth: "300px",
-            height: "auto",
-            borderRadius: "8px",
-            marginBottom: "10px",
-          }}
-        />
-      )}
-      <h3>{section.category}</h3>
+      <h3 className="qr-menu-section-title">
+        <img src="/icon.png" alt="Default Icon" className="section-icon" />
+        {section.category}
+        {section.iconUrl && (
+          <img
+            src={section.iconUrl}
+            alt="Category Extra Icon"
+            className="section-icon-iconUrl"
+            style={{ marginLeft: "4px" }}
+          />
+        )}
+      </h3>
+
       <ul className="qr-menu-items">
         {section.items?.map((item, idx) => (
           <li key={idx} className="qr-menu-item">
             {item.imageUrl && (
               <img
                 src={item.imageUrl}
-                alt={item.name || "Menu item image"}
-                className="item-image"
+                alt={item.nameEn || item.nameHy || "Menu item image"}
+                className="qr-menu-item-image"
               />
             )}
-            <span>
-              {item.name} — <strong>{item.price} ֏</strong>
-            </span>
+            <div className="qr-menu-item-text">
+              <div className="qr-menu-item-line">
+                <span className="item-name-block">
+                  {item.nameEn && (
+                    <span className="item-name-en">{item.nameEn}</span>
+                  )}
+                  {item.nameHy && (
+                    <span className="item-name-hy">{item.nameHy}</span>
+                  )}
+                </span>
+                <span className="dots"></span>
+                <strong className="item-price">{item.price} AMD</strong>
+              </div>
+            </div>
           </li>
         ))}
       </ul>
@@ -51,6 +81,12 @@ function MenuSection({ section, index }) {
 export default function QrMenuPage() {
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const categories = [...new Set(menu.map((s) => s.category))];
+  const categorySlugs = categories.map((cat) => ({
+    name: cat,
+    slug: slugify(cat),
+  }));
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -76,8 +112,9 @@ export default function QrMenuPage() {
     <div className="qr-menu-page">
       <h2 className="menu-title">
         <img src="/logo.jpg" alt="Pascali Logo" className="menu-logo" />
-        <span>Pascali Menu</span>
       </h2>
+
+      <Nav categories={categorySlugs} />
 
       {loading ? (
         <div className="loader" aria-label="Մենյուն բեռնվում է...">
@@ -89,25 +126,23 @@ export default function QrMenuPage() {
         </p>
       ) : (
         menu.map((section, index) => (
-          <MenuSection
-            key={section.id}
-            section={section}
-            index={index}
-          />
+          <MenuSection key={section.id} section={section} index={index} />
         ))
       )}
 
       <div className="qr-menu-info">
-        <p>📍 Moskovyan 28</p>
+        <p>Lastiver</p>
         <p>
           <em>
-            Once upon a time Harutyun Pascali opened the 1st coffee place in
-            France…
+            Relax and recharge with us
+            <br />▫️Restaurant / Pool / Bar
+            <br />▫️Every day 10:00-22:00
           </em>
         </p>
         <p>
-          <strong>Official distributor of Malongo</strong>
+          <strong>Երևան-Աշտարակ մայրուղի ձախ ափ 17/1, Ashtarak, Armenia</strong>
         </p>
+        <ScrollToTop />
       </div>
     </div>
   );

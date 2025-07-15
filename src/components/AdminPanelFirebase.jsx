@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   collection,
   getDocs,
@@ -10,50 +10,40 @@ import {
   arrayRemove,
 } from "firebase/firestore";
 import { db } from "../firebase";
+import CategoryForm from "./CategoryForm";
+import ItemForm from "./ItemForm";
+import ConfirmModal from "./ConfirmModal";
+import ActionButton from "./ActionButton";
 import "../styles/AdminPanelFirebase.css";
 
 const menuRef = collection(db, "menu");
 
-// ActionButton with click listener for both left and right click
-const ActionButton = ({ onAction, children, ...props }) => {
-  const btnRef = useRef(null);
-
-  useEffect(() => {
-    const btn = btnRef.current;
-    if (!btn) return;
-
-    const handler = (e) => {
-      e.preventDefault();
-      onAction();
-    };
-
-    btn.addEventListener("click", handler);
-    btn.addEventListener("contextmenu", handler);
-
-    return () => {
-      btn.removeEventListener("click", handler);
-      btn.removeEventListener("contextmenu", handler);
-    };
-  }, [onAction]);
-
-  return (
-    <button ref={btnRef} {...props}>
-      {children}
-    </button>
-  );
-};
-
 export default function AdminPanelFirebase() {
   const [menu, setMenu] = useState([]);
   const [category, setCategory] = useState("");
-  const [categoryImageUrl, setCategoryImageUrl] = useState(""); // ✅ Նոր
+  const [categoryIconUrl, setCategoryIconUrl] = useState("");
+  const [categoryItemsBgUrl, setCategoryItemsBgUrl] = useState(""); // ✅ նոր
+
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
+  const [editingCategoryIconUrl, setEditingCategoryIconUrl] = useState("");
+  const [editingCategoryItemsBgUrl, setEditingCategoryItemsBgUrl] = useState(""); // ✅ նոր
+
   const [selectedCatId, setSelectedCatId] = useState("");
-  const [itemName, setItemName] = useState("");
+  const [itemNameHy, setItemNameHy] = useState("");
+  const [itemNameEn, setItemNameEn] = useState("");
   const [itemPrice, setItemPrice] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [editingItem, setEditingItem] = useState(null);
+
+  const [confirmDelete, setConfirmDelete] = useState({
+    visible: false,
+    type: null,
+    payload: null,
+  });
+
+  const editingCategoryRef = useRef(null);
+  const itemFormRef = useRef(null);
 
   const loadMenu = async () => {
     const snapshot = await getDocs(menuRef);
@@ -66,40 +56,66 @@ export default function AdminPanelFirebase() {
     loadMenu();
   }, []);
 
+  useEffect(() => {
+    if (editingCategory && editingCategoryRef.current) {
+      editingCategoryRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [editingCategory]);
+
+  useEffect(() => {
+    if (editingItem && itemFormRef.current) {
+      itemFormRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [editingItem]);
+
+  // -- Category --
   const addCategory = async () => {
     if (!category) return;
-    const highestOrder = menu.reduce(
-      (max, sec) => Math.max(max, sec.order ?? 0),
-      0
-    );
+    const highestOrder = menu.reduce((max, sec) => Math.max(max, sec.order ?? 0), 0);
     await addDoc(menuRef, {
       category,
-      imageUrl: categoryImageUrl, // ✅ Պահիր նկարը
+      iconUrl: categoryIconUrl,
+      itemsBackgroundUrl: categoryItemsBgUrl, // ✅
       items: [],
       order: highestOrder + 1,
     });
     setCategory("");
-    setCategoryImageUrl(""); // ✅ Մաքրի input-ը
+    setCategoryIconUrl("");
+    setCategoryItemsBgUrl(""); // ✅
     loadMenu();
   };
 
-  const startEditingCategory = (category) => {
-    setEditingCategory(category);
-    setEditingCategoryName(category.category);
+  const startEditingCategory = (cat) => {
+    setEditingCategory(cat);
+    setEditingCategoryName(cat.category);
+    setEditingCategoryIconUrl(cat.iconUrl || "");
+    setEditingCategoryItemsBgUrl(cat.itemsBackgroundUrl || ""); // ✅
   };
 
   const editCategory = async () => {
     if (!editingCategory || !editingCategoryName) return;
     const ref = doc(db, "menu", editingCategory.id);
-    await updateDoc(ref, { category: editingCategoryName });
+    await updateDoc(ref, {
+      category: editingCategoryName,
+      iconUrl: editingCategoryIconUrl,
+      itemsBackgroundUrl: editingCategoryItemsBgUrl, // ✅
+    });
     setEditingCategory(null);
     setEditingCategoryName("");
+    setEditingCategoryIconUrl("");
+    setEditingCategoryItemsBgUrl(""); // ✅
     loadMenu();
   };
 
-  const deleteCategory = async (id) => {
-    await deleteDoc(doc(db, "menu", id));
-    loadMenu();
+  const cancelCategoryEdit = () => {
+    setEditingCategory(null);
+    setEditingCategoryName("");
+    setEditingCategoryIconUrl("");
+    setEditingCategoryItemsBgUrl(""); // ✅
+  };
+
+  const askDeleteCategory = (id) => {
+    setConfirmDelete({ visible: true, type: "category", payload: id });
   };
 
   const moveCategoryUp = async (index) => {
@@ -128,28 +144,32 @@ export default function AdminPanelFirebase() {
     loadMenu();
   };
 
+  // -- Item --
   const addItem = async () => {
-    if (!itemName || !itemPrice || !selectedCatId) return;
+    if ((!itemNameHy && !itemNameEn) || !itemPrice || !selectedCatId) return;
     const ref = doc(db, "menu", selectedCatId);
     await updateDoc(ref, {
       items: arrayUnion({
-        name: itemName,
+        nameHy: itemNameHy,
+        nameEn: itemNameEn,
         price: itemPrice,
         imageUrl: imageUrl,
       }),
     });
-    setItemName("");
+    setItemNameHy("");
+    setItemNameEn("");
     setItemPrice("");
     setImageUrl("");
     loadMenu();
   };
 
-  const startEditingItem = (catId, item) => {
+  const startEditingItem = (catId, item, idx) => {
     setSelectedCatId(catId);
-    setItemName(item.name);
+    setItemNameHy(item.nameHy || "");
+    setItemNameEn(item.nameEn || "");
     setItemPrice(item.price);
     setImageUrl(item.imageUrl || "");
-    setEditingItem({ original: item });
+    setEditingItem({ original: item, index: idx });
   };
 
   const editItem = async () => {
@@ -160,7 +180,8 @@ export default function AdminPanelFirebase() {
       .items.map((item) =>
         item === editingItem.original
           ? {
-              name: itemName,
+              nameHy: itemNameHy,
+              nameEn: itemNameEn,
               price: itemPrice,
               imageUrl: imageUrl,
             }
@@ -168,160 +189,150 @@ export default function AdminPanelFirebase() {
       );
     await updateDoc(ref, { items: updatedItems });
     setEditingItem(null);
-    setItemName("");
+    setItemNameHy("");
+    setItemNameEn("");
     setItemPrice("");
     setImageUrl("");
     loadMenu();
   };
 
-  const deleteItem = async (catId, item) => {
+  const cancelItemEdit = () => {
+    setEditingItem(null);
+    setItemNameHy("");
+    setItemNameEn("");
+    setItemPrice("");
+    setImageUrl("");
+  };
+
+  const moveItemUp = async (catId, index) => {
+    if (index === 0) return;
+    const category = menu.find((cat) => cat.id === catId);
+    if (!category) return;
+
+    const items = [...(category.items || [])];
+    [items[index - 1], items[index]] = [items[index], items[index - 1]];
+
     const ref = doc(db, "menu", catId);
-    await updateDoc(ref, {
-      items: arrayRemove(item),
-    });
+    await updateDoc(ref, { items });
     loadMenu();
+  };
+
+  const moveItemDown = async (catId, index) => {
+    const category = menu.find((cat) => cat.id === catId);
+    if (!category) return;
+    if (index === (category.items?.length ?? 0) - 1) return;
+
+    const items = [...(category.items || [])];
+    [items[index], items[index + 1]] = [items[index + 1], items[index]];
+
+    const ref = doc(db, "menu", catId);
+    await updateDoc(ref, { items });
+    loadMenu();
+  };
+
+  const askDeleteItem = (catId, item) => {
+    setConfirmDelete({ visible: true, type: "item", payload: { catId, item } });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete.visible) return;
+
+    if (confirmDelete.type === "category") {
+      await deleteDoc(doc(db, "menu", confirmDelete.payload));
+    } else if (confirmDelete.type === "item") {
+      const { catId, item } = confirmDelete.payload;
+      const ref = doc(db, "menu", catId);
+      await updateDoc(ref, { items: arrayRemove(item) });
+    }
+
+    setConfirmDelete({ visible: false, type: null, payload: null });
+    loadMenu();
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDelete({ visible: false, type: null, payload: null });
   };
 
   return (
     <div className="admin-panel">
       <h2>Admin Panel</h2>
 
-      <input
-        placeholder="Նոր բաժին (օր. Սուրճ)"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
+      <CategoryForm
+        category={category}
+        categoryIconUrl={categoryIconUrl}
+        categoryItemsBgUrl={categoryItemsBgUrl}
+        setCategory={setCategory}
+        setCategoryIconUrl={setCategoryIconUrl}
+        setCategoryItemsBgUrl={setCategoryItemsBgUrl}
+        addCategory={addCategory}
+        editingCategory={editingCategory}
+        editingCategoryName={editingCategoryName}
+        editingCategoryIconUrl={editingCategoryIconUrl}
+        editingCategoryItemsBgUrl={editingCategoryItemsBgUrl}
+        setEditingCategoryName={setEditingCategoryName}
+        setEditingCategoryIconUrl={setEditingCategoryIconUrl}
+        setEditingCategoryItemsBgUrl={setEditingCategoryItemsBgUrl}
+        editCategory={editCategory}
+        cancelCategoryEdit={cancelCategoryEdit}
+        editingCategoryRef={editingCategoryRef}
       />
-      <input
-        placeholder="Բաժնի նկարի հղում (օր. Imgur)"
-        value={categoryImageUrl}
-        onChange={(e) => setCategoryImageUrl(e.target.value)}
-      />
-
-      <ActionButton onAction={addCategory}>➕ Ավելացնել Բաժին</ActionButton>
-
-      {editingCategory && (
-        <div style={{ marginTop: "1rem" }}>
-          <p style={{ color: "red" }}>
-            Խմբագրում ես բաժինը: <strong>{editingCategory.category}</strong>
-          </p>
-          <input
-            placeholder="Նոր անուն բաժնի համար"
-            value={editingCategoryName}
-            onChange={(e) => setEditingCategoryName(e.target.value)}
-          />
-          <ActionButton onAction={editCategory}>✔ Թարմացնել բաժինը</ActionButton>
-          <ActionButton
-            onAction={() => {
-              setEditingCategory(null);
-              setEditingCategoryName("");
-            }}
-          >
-            ❌ Չեղարկել
-          </ActionButton>
-        </div>
-      )}
 
       <hr />
 
-      {editingItem && (
-        <div>
-          <p style={{ color: "red" }}>Խմբագրման ռեժիմում ես!</p>
-          <ActionButton
-            onAction={() => {
-              setEditingItem(null);
-              setItemName("");
-              setItemPrice("");
-              setImageUrl("");
-            }}
-          >
-            ❌ Չեղարկել խմբագրումը
-          </ActionButton>
-        </div>
-      )}
-
-      <select
-        value={selectedCatId}
-        onChange={(e) => setSelectedCatId(e.target.value)}
-      >
-        <option value="">Ընտրիր բաժինը</option>
-        {menu.map((sec) => (
-          <option key={sec.id} value={sec.id}>
-            {sec.category}
-          </option>
-        ))}
-      </select>
-
-      <input
-        placeholder="Անուն"
-        value={itemName}
-        onChange={(e) => setItemName(e.target.value)}
-      />
-      <input
-        placeholder="Գին"
-        type="number"
-        value={itemPrice}
-        onChange={(e) => setItemPrice(e.target.value)}
-      />
-      <input
-        placeholder="Կետի նկարի հղում (Imgur URL)"
-        value={imageUrl}
-        onChange={(e) => setImageUrl(e.target.value)}
-      />
-
-      {editingItem ? (
-        <ActionButton onAction={editItem}>✔ Թարմացնել Կետը</ActionButton>
-      ) : (
-        <ActionButton onAction={addItem}>➕ Ավելացնել Կետ</ActionButton>
-      )}
+      <div ref={itemFormRef}>
+        <ItemForm
+          menu={menu}
+          selectedCatId={selectedCatId}
+          setSelectedCatId={setSelectedCatId}
+          itemNameHy={itemNameHy}
+          setItemNameHy={setItemNameHy}
+          itemNameEn={itemNameEn}
+          setItemNameEn={setItemNameEn}
+          itemPrice={itemPrice}
+          setItemPrice={setItemPrice}
+          imageUrl={imageUrl}
+          setImageUrl={setImageUrl}
+          addItem={addItem}
+          editingItem={editingItem}
+          editItem={editItem}
+          cancelItemEdit={cancelItemEdit}
+        />
+      </div>
 
       <hr />
 
       {menu.map((sec, index) => (
         <div key={sec.id}>
-          {sec.imageUrl && (
-            <img
-              src={sec.imageUrl}
-              alt={sec.category}
-              style={{
-                width: "150px",
-                height: "auto",
-                objectFit: "cover",
-                borderRadius: "8px",
-                marginBottom: "8px",
-              }}
-            />
-          )}
-          <h3>
-            {sec.category}{" "}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {sec.iconUrl && (
+              <img
+                src={sec.iconUrl}
+                alt={`${sec.category} icon`}
+                style={{ width: 24, height: 24, objectFit: "contain" }}
+              />
+            )}
+            <h3 style={{ margin: 0 }}>{sec.category}</h3>
             <span className="reorder-buttons">
               <ActionButton
                 onAction={() => moveCategoryUp(index)}
                 disabled={index === 0}
-                title="Վեր բարձրացնել"
               >
                 ⬆
               </ActionButton>
               <ActionButton
                 onAction={() => moveCategoryDown(index)}
                 disabled={index === menu.length - 1}
-                title="Նստեցնել ներքև"
               >
                 ⬇
               </ActionButton>
+              <ActionButton onAction={() => startEditingCategory(sec)}>
+                ✏️
+              </ActionButton>
+              <ActionButton onAction={() => askDeleteCategory(sec.id)}>
+                ❌
+              </ActionButton>
             </span>
-            <ActionButton
-              onAction={() => startEditingCategory(sec)}
-              title="Խմբագրել բաժինը"
-            >
-              ✏️
-            </ActionButton>
-            <ActionButton
-              onAction={() => deleteCategory(sec.id)}
-              title="Ջնջել"
-            >
-              ❌
-            </ActionButton>
-          </h3>
+          </div>
 
           <ul style={{ listStyle: "none", padding: 0 }}>
             {sec.items?.map((item, idx) => (
@@ -337,7 +348,7 @@ export default function AdminPanelFirebase() {
                 {item.imageUrl && (
                   <img
                     src={item.imageUrl}
-                    alt={item.name}
+                    alt=""
                     style={{
                       width: 50,
                       height: 50,
@@ -346,19 +357,25 @@ export default function AdminPanelFirebase() {
                     }}
                   />
                 )}
-                <span>
-                  {item.name} - {item.price} ֏
+                <span style={{ flexGrow: 1 }}>
+                  {item.nameEn} / {item.nameHy} - {item.price} ֏
                 </span>
                 <ActionButton
-                  onAction={() => startEditingItem(sec.id, item)}
-                  title="Խմբագրել կետը"
+                  onAction={() => moveItemUp(sec.id, idx)}
+                  disabled={idx === 0}
                 >
-                  ✏️
+                  ⬆
                 </ActionButton>
                 <ActionButton
-                  onAction={() => deleteItem(sec.id, item)}
-                  title="Ջնջել կետը"
+                  onAction={() => moveItemDown(sec.id, idx)}
+                  disabled={idx === sec.items.length - 1}
                 >
+                  ⬇
+                </ActionButton>
+                <ActionButton onAction={() => startEditingItem(sec.id, item, idx)}>
+                  ✏️
+                </ActionButton>
+                <ActionButton onAction={() => askDeleteItem(sec.id, item)}>
                   🗑
                 </ActionButton>
               </li>
@@ -366,6 +383,18 @@ export default function AdminPanelFirebase() {
           </ul>
         </div>
       ))}
+
+      {confirmDelete.visible && (
+        <ConfirmModal
+          message={
+            confirmDelete.type === "category"
+              ? "Դուք ցանկանում եք ջնջել այս բաժինը?"
+              : "Դուք ցանկանում եք ջնջել այս կետը?"
+          }
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      )}
     </div>
   );
 }

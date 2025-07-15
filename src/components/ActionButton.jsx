@@ -1,13 +1,16 @@
-const ActionButton = ({ onAction, children, ...props }) => (
+import React from "react";
+
+export default function ActionButton({ onAction, disabled, children }) {
+  return (
     <button
+      disabled={disabled}
       onClick={onAction}
-      onContextMenu={(e) => {
-        e.preventDefault(); // Արգելում ենք աջ կոճակի menu-ն
-        // onAction() այստեղ չկանչենք, միայն ձախ կոճակի համար թողնենք
+      style={{
+        cursor: disabled ? "not-allowed" : "pointer",
+        margin: "0 3px",
       }}
-      {...props}
     >
       {children}
     </button>
   );
-  
+}

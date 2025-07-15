@@ -1,0 +1,24 @@
+/* ----- Scroll To Top Fixed Button ----- */
+
+.scroll-to-top {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    background-color: #2B33C3; /* Քո ցանկալի ֆոն */
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: transform 0.3s, background 0.3s;
+    z-index: 9999;
+  }
+  
+  .scroll-to-top:hover {
+    transform: scale(1.1);
+    background-color: #1a219c; /* ավելի մուգ hover */
+  }
+  
