@@ -11,10 +11,11 @@ function slugify(text) {
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "")
-    .replace(/--+/g, "-");
+    .replace(/\s+/g, "-") // Բոլոր բացատները փոխում ենք -
+    .replace(/[^\p{L}\p{N}-]+/gu, "") // Թույլատրում ենք միայն տառեր (L), թվեր (N), և - նշանը
+    .replace(/--+/g, "-"); // Երկուից ավել - վերացնում ենք
 }
+
 
 /* ----- MenuSection Subcomponent ----- */
 function MenuSection({ section, index }) {

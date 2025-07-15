@@ -34,15 +34,15 @@ export default function ItemForm({
 
       <input
         type="text"
-        placeholder="Անուն (Հայերեն)"
-        value={itemNameHy}
-        onChange={(e) => setItemNameHy(e.target.value)}
-      />
-      <input
-        type="text"
         placeholder="Name (English)"
         value={itemNameEn}
         onChange={(e) => setItemNameEn(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="Անուն (Հայերեն)"
+        value={itemNameHy}
+        onChange={(e) => setItemNameHy(e.target.value)}
       />
       <input
         type="number"

@@ -1,17 +1,14 @@
 /* QrMenuPage.css */
 
-/* ----- Base styles (Starbucks inspired) ----- */
+/* ----- Base styles (Special Gothic inspired) ----- */
 @import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap');
 
+.qr-menu-page,
 .qr-menu-section h3,
 .qr-menu-item-line,
 .qr-menu-info,
 .empty-state,
-.loader {
-  font-family: 'Special Gothic Expanded One', sans-serif;
-}
-
-/* Եթե ուզում ես նաև փոքրիկ տեքստերին՝ */
+.loader,
 .qr-menu-item-text,
 .item-name-block,
 .item-name-en,
@@ -23,34 +20,30 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem 1rem;
-  font-family: 'Special Gothic Expanded One', sans-serif;;
-  color: #1e3932; /* Starbucks dark green */
-  background: #f8f5f0; /* warm craft-paper look */
+  background: #f8f5f0;
+  color: #1e3932;
 }
 
+/* ----- Menu Title ----- */
 .menu-title {
   display: flex;
-  flex-direction: column; /* լոգոն և տեքստը մեկը մյուսի տակ */
-  align-items: center;     /* ուղղահայաց կենտրոնացում */
-  justify-content: center; /* հորիզոնական կենտրոնացում */
+  flex-direction: column;
+  align-items: center;
   gap: 0.5rem;
   font-size: 2rem;
   margin-bottom: 2rem;
   color: #2B33C3;
-  font-family: 'Special Gothic Expanded One', sans-serif;
-  text-align: center;      /* եթե տեքստը մի քանի տող է */
+  text-align: center;
 }
 
 .menu-logo {
-  width: 60px;
+  width: 100px;
   height: auto;
-  display: block;  /* ապահովում է որ img-ն լինի block մակարդակի */
-  margin: 0 auto;  /* ապահովում է, որ img-ն լիներ կենտրոնում, եթե flex չլիներ */
-
+  display: block;
+  margin: 0 auto;
 }
 
 /* ----- Loader ----- */
-
 .loader {
   display: flex;
   justify-content: center;
@@ -78,7 +71,6 @@
 }
 
 /* ----- Empty state ----- */
-
 .empty-state {
   text-align: center;
   font-style: italic;
@@ -87,7 +79,6 @@
 }
 
 /* ----- Menu Sections ----- */
-
 .qr-menu-section {
   background: #ffffff;
   border-radius: 12px;
@@ -104,10 +95,24 @@
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
   color: #2B33C3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.section-icon-iconUrl {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
 /* ----- Menu Items ----- */
-
 .qr-menu-items {
   list-style: none;
   padding: 0;
@@ -122,8 +127,8 @@
   border-radius: 8px;
   padding: 0.75rem;
   box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-  transition: transform 0.2s, box-shadow 0.2s;
   border: 1px solid #e6ebe9;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .qr-menu-item:hover {
@@ -140,27 +145,11 @@
   margin-right: 1rem;
   flex-shrink: 0;
 }
-.qr-menu-section-title {
-  display: flex;
-  align-items: center; /* նկարը և տեքստը լինեն նույն գծի վրա */
-  gap: 0.5rem;
-}
 
-.section-icon {
-  width: 20px;  /* կամ ինչքան որ ուզում ես */
-  height: 20px;
-  object-fit: contain;
-}
-.section-icon-iconUrl{
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-}
 .qr-menu-item-text {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   width: 100%;
 }
 
@@ -172,7 +161,7 @@
 
 .item-name-block {
   display: flex;
-  flex-direction: column; /* English & Հայերեն մեկը մյուսի տակ */
+  flex-direction: column;
 }
 
 .item-name-en {
@@ -203,7 +192,6 @@
 }
 
 /* ----- Menu Info ----- */
-
 .qr-menu-info {
   margin-top: 3rem;
   text-align: center;
@@ -216,7 +204,6 @@
 }
 
 /* ----- Animations ----- */
-
 @keyframes fadeIn {
   to {
     opacity: 1;
@@ -231,7 +218,6 @@
 }
 
 /* ----- Responsive ----- */
-
 @media (max-width: 600px) {
   .menu-title {
     flex-direction: column;
@@ -249,7 +235,7 @@
   }
 
   .qr-menu-item-line {
-    flex-direction: row; /* English & Հայերեն մեկը մյուսի տակ կմնան, մնացածը row */
+    flex-direction: row;
     width: 100%;
   }
 }
