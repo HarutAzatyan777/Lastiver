@@ -111,7 +111,7 @@ export default function QrMenuPage() {
   return (
     <div className="qr-menu-page">
       <h2 className="menu-title">
-        <img src="/logo.jpg" alt="Pascali Logo" className="menu-logo" />
+        <img src="/logo.jpg" alt="Lastiver Logo" className="menu-logo" />
       </h2>
 
       <Nav categories={categorySlugs} />
