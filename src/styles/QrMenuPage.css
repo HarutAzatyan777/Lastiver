@@ -1,8 +1,17 @@
-/* QrMenuPage.css */
+/* Import Roboto font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-/* ----- Base styles (Special Gothic inspired) ----- */
-@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap');
+/* Define main colors as CSS variables */
+:root {
+  --primary-color: #5B4B8A;
+  --primary-light: #A79CD9;
+  --bg-soft: #F4F1FA;
+  --border-light: #dcd6ec;
+  --text-color: #2e3d49;
+  --muted-text: #7b8a8e;
+}
 
+/* Apply Roboto font globally */
 .qr-menu-page,
 .qr-menu-section h3,
 .qr-menu-item-line,
@@ -13,27 +22,33 @@
 .item-name-block,
 .item-name-en,
 .item-name-hy {
-  font-family: 'Special Gothic Expanded One', sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 
+/* Gradient background + container styles */
 .qr-menu-page {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem 1rem;
-  background: #f8f5f0;
-  color: #1e3932;
+  background: linear-gradient(135deg, #f6f8fc, #e9f0f7, #dbe6f3);
+  color: var(--text-color);
+  min-height: 100vh;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
-/* ----- Menu Title ----- */
+/* Menu title section */
 .menu-title {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  font-size: 2rem;
+  font-size: 2.4rem;
+  font-weight: 700;
   margin-bottom: 2rem;
-  color: #2B33C3;
+  color: var(--primary-color);
   text-align: center;
+  text-shadow: 1px 1px 2px rgba(91, 75, 138, 0.1);
 }
 
 .menu-logo {
@@ -43,76 +58,68 @@
   margin: 0 auto;
 }
 
-/* ----- Loader ----- */
+/* Loader */
 .loader {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 150px;
   font-size: 1.2rem;
-  color: #4b615c;
+  color: #707d84;
 }
 
 .loader::before {
   content: "";
   width: 40px;
   height: 40px;
-  border: 4px solid #a8b8b0;
+  border: 4px solid #c3badc;
   border-top-color: transparent;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-right: 10px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ----- Empty state ----- */
+/* Empty state */
 .empty-state {
   text-align: center;
   font-style: italic;
-  color: #6f837a;
+  color: var(--muted-text);
   margin-top: 2rem;
 }
 
-/* ----- Menu Sections ----- */
+/* Section wrapper */
 .qr-menu-section {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
   margin-bottom: 2rem;
   opacity: 0;
   animation: fadeIn 0.5s forwards;
 }
 
+/* Section title */
 .qr-menu-section h3 {
-  font-size: 24px;
-  border-bottom: 2px solid #d4e9e2;
+  font-size: 1.5rem;
+  border-bottom: 2px solid var(--border-light);
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
-  color: #2B33C3;
+  color: var(--primary-color);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.section-icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-}
-
+/* Section icons */
+.section-icon,
 .section-icon-iconUrl {
   width: 40px;
   height: 40px;
   object-fit: contain;
 }
 
-/* ----- Menu Items ----- */
+/* Menu item list */
 .qr-menu-items {
   list-style: none;
   padding: 0;
@@ -123,17 +130,18 @@
   display: flex;
   align-items: center;
   margin-bottom: 0.75rem;
-  background: #f6f6f4;
-  border-radius: 8px;
+  background: #f9fafc;
+  opacity: 0.9;
+  border-radius: 10px;
   padding: 0.75rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-  border: 1px solid #e6ebe9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e0e6f0;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .qr-menu-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .qr-menu-item img {
@@ -141,11 +149,12 @@
   height: 50px;
   object-fit: cover;
   border-radius: 50%;
-  border: 2px solid #2B33C3;
+  border: 2px solid var(--primary-color);
   margin-right: 1rem;
   flex-shrink: 0;
 }
 
+/* Item text */
 .qr-menu-item-text {
   flex: 1;
   display: flex;
@@ -165,20 +174,20 @@
 }
 
 .item-name-en {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 500;
-  color: black;
+  color: var(--text-color);
 }
 
 .item-name-hy {
-  font-size: 0.7rem;
-  color: #a80000;
+  font-size: 0.75rem;
+  color: #d62828;
   margin-top: 2px;
 }
 
 .qr-menu-item-line .dots {
   flex: 1;
-  border-bottom: 1px dotted red;
+  border-bottom: 1px dotted #a2a2a2;
   margin: 0 0.5rem;
   height: 0;
   align-self: center;
@@ -187,23 +196,29 @@
 .qr-menu-item-line .item-price {
   white-space: nowrap;
   font-weight: bold;
-  color: #2B33C3;
+  color: var(--primary-color);
   align-self: center;
 }
 
-/* ----- Menu Info ----- */
+/* Info box */
 .qr-menu-info {
   margin-top: 3rem;
   text-align: center;
   font-size: 0.9rem;
-  color: #2B33C3;
+  color: var(--primary-color);
 }
 
 .qr-menu-info p {
   margin: 0.25rem 0;
 }
 
-/* ----- Animations ----- */
+/* Animations */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes fadeIn {
   to {
     opacity: 1;
@@ -217,7 +232,7 @@
   animation: fadeIn 0.5s forwards;
 }
 
-/* ----- Responsive ----- */
+/* Responsive */
 @media (max-width: 600px) {
   .menu-title {
     flex-direction: column;
