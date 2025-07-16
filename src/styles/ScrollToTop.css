@@ -4,8 +4,9 @@
     position: fixed;
     bottom: 40px;
     right: 40px;
-    background-color: #2B33C3; /* Քո ցանկալի ֆոն */
-    color: #ffffff;
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 3px 8px rgba(91, 75, 138, 0.2);
     border: none;
     border-radius: 50%;
     width: 45px;
@@ -19,6 +20,7 @@
   
   .scroll-to-top:hover {
     transform: scale(1.1);
-    background-color: #1a219c; /* ավելի մուգ hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   }
   
