@@ -35,7 +35,7 @@ function MenuSection({ section, index }) {
       }}
     >
       <h3 className="qr-menu-section-title">
-        {/* <img src="/icon.png" alt="Default Icon" className="section-icon" /> */}
+        <img src="/icon.png" alt="Default Icon" className="section-icon" />
         {section.category}
         {section.iconUrl && (
           <img
