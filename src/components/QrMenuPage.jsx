@@ -16,10 +16,15 @@ function slugify(text) {
     .replace(/--+/g, "-"); // Երկուից ավել - վերացնում ենք
 }
 
-
 /* ----- MenuSection Subcomponent ----- */
 function MenuSection({ section, index }) {
   const sectionId = slugify(section.category);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const ITEMS_LIMIT = 4; // Ցուցադրվող ապրանքների քանակը մինչև «Տեսնել ավելին»
+  const items = section.items || [];
+  const hasMore = items.length > ITEMS_LIMIT;
+  const visibleItems = isExpanded ? items : items.slice(0, ITEMS_LIMIT);
 
   return (
     <div
@@ -28,27 +33,45 @@ function MenuSection({ section, index }) {
       style={{
         animationDelay: `${index * 100}ms`,
         backgroundImage: section.itemsBackgroundUrl
-          ? `url(${section.itemsBackgroundUrl})`
+          ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), url("${section.itemsBackgroundUrl}")`
           : "none",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        color: section.itemsBackgroundUrl ? "#fff" : "inherit",
+        borderRadius: "16px",
+        boxShadow: section.itemsBackgroundUrl
+          ? "0 8px 20px rgba(0,0,0,0.3)"
+          : "none",
+        overflow: "hidden", // Որպեսզի նկարը չանցնի կլորացված անկյուններից
+        minHeight: "380px", // Ապահովում է հաստատուն չափ, եթե նույնիսկ ապրանքները 4-ից քիչ են
       }}
     >
       <h3 className="qr-menu-section-title">
-        <img src="/icon.png" alt="Default Icon" className="section-icon" />
-        {section.category}
-        {section.iconUrl && (
-          <img
-            src={section.iconUrl}
-            alt="Category Extra Icon"
-            className="section-icon-iconUrl"
-            style={{ marginLeft: "4px" }}
-          />
-        )}
+        <img
+          src={section.iconUrl || "/icon.png"}
+          alt="Category Icon"
+          className="section-icon"
+        />
+        <span className="section-title-text">
+          {section.category}
+          {section.categoryEn && (
+            <span
+              style={{
+                fontSize: "0.8em",
+                color: section.itemsBackgroundUrl ? "#ddd" : "#666",
+                marginLeft: "8px",
+                fontWeight: "normal",
+              }}
+            >
+              / {section.categoryEn}
+            </span>
+          )}
+        </span>
       </h3>
 
       <ul className="qr-menu-items">
-        {section.items?.map((item, idx) => (
+        {visibleItems.map((item, idx) => (
           <li key={idx} className="qr-menu-item">
             {item.imageUrl && (
               <img
@@ -74,6 +97,33 @@ function MenuSection({ section, index }) {
           </li>
         ))}
       </ul>
+
+      {hasMore && (
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: "10px",
+            paddingBottom: "15px",
+          }}
+        >
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              color: "#333",
+              border: "none",
+              padding: "8px 24px",
+              borderRadius: "20px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+              transition: "background 0.3s ease",
+            }}
+          >
+            {isExpanded ? "Փակել ⬆" : "Տեսնել ավելին ⬇"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -136,8 +186,10 @@ export default function QrMenuPage() {
         <p>
           <em>
             Relax and recharge with us
-            <br />▫️Restaurant / Pool / Bar
-            <br />▫️Every day 10:00-22:00
+            <br />
+            ▫️Restaurant / Pool / Bar
+            <br />
+            ▫️Every day 10:00-22:00
           </em>
         </p>
         <p>

@@ -3,7 +3,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import '../styles/LoginForm.css';
 
-const ADMIN_EMAIL = "admin@pascali.com";
+const ADMIN_EMAIL = "admin@lastiver.am";
 
 export default function LoginForm({ onLogin }) {
   const [email, setEmail] = useState("");

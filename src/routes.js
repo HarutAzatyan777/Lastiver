@@ -5,7 +5,7 @@ import AdminPanelFirebase from "./components/AdminPanelFirebase";
 import LoginForm from "./components/LoginForm";
 
 
-const ADMIN_EMAIL = "lastiverashtarak@gmail.com";
+const ADMIN_EMAIL = "admin@lastiver.am";
 
 export const getRoutes = (user) => [
   <Route key="/" path="/" element={<MenuPage />} />,
