@@ -6,6 +6,7 @@ import "../styles/Nav.css";
 export default function Nav({ categories }) {
   const [activeSlug, setActiveSlug] = useState(null);
   const scrollRef = useRef(null);
+  const isClickScrolling = useRef(false); // Սքրոլի ժամանակ (կոճակով) խուսափելու համար ավելորդ ցատկերից
 
   // Mouse Drag տրամաբանության state-եր
   const [isDown, setIsDown] = useState(false);
@@ -23,12 +24,70 @@ export default function Nav({ categories }) {
     return () => window.removeEventListener("scroll", handleScrollEvent);
   }, []);
 
+  // Հետևում ենք, թե որ բաժնում ենք գտնվում (Scroll Spy)
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    const observerOptions = {
+      root: null,
+      // Թողնում ենք 120px վերևից (որ sticky նավիգացիան չխանգարի) և 60% ներքևից
+      rootMargin: "-120px 0px -60% 0px",
+      threshold: 0,
+    };
+
+    const observerCallback = (entries) => {
+      if (isClickScrolling.current) return; // Եթե սեղմել ենք կոճակը, սպասում ենք հասնի տեղ
+
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const currentSlug = entry.target.id;
+          setActiveSlug(currentSlug);
+          scrollToActiveNavButton(currentSlug);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(
+      observerCallback,
+      observerOptions,
+    );
+
+    categories.forEach((cat) => {
+      const el = document.getElementById(cat.slug);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [categories]);
+
+  const scrollToActiveNavButton = (slug) => {
+    if (!scrollRef.current) return;
+    const button = scrollRef.current.querySelector(`[data-slug="${slug}"]`);
+    if (button) {
+      const container = scrollRef.current;
+      // Հաշվարկում ենք այնպես, որ կոճակը հայտնվի կենտրոնում
+      const scrollLeft =
+        button.offsetLeft -
+        container.offsetLeft -
+        container.clientWidth / 2 +
+        button.clientWidth / 2;
+      container.scrollTo({ left: scrollLeft, behavior: "smooth" });
+    }
+  };
+
   const handleScroll = (slug) => {
     if (isDragging) return; // Եթե քաշում էինք (drag), ապա click-ը արհամարհում ենք
     const section = document.getElementById(slug);
     if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
+      isClickScrolling.current = true;
       setActiveSlug(slug);
+      scrollToActiveNavButton(slug);
+      section.scrollIntoView({ behavior: "smooth" });
+
+      // 1 վայրկյանից հանում ենք բլոկը (երբ smooth scroll-ը ավարտվի)
+      setTimeout(() => {
+        isClickScrolling.current = false;
+      }, 1000);
     }
   };
 
@@ -70,6 +129,7 @@ export default function Nav({ categories }) {
           {categories.map(({ name, slug, iconUrl }) => (
             <button
               key={slug}
+              data-slug={slug}
               onClick={() => handleScroll(slug)}
               className={`qr-nav-button ${activeSlug === slug ? "active" : ""}`}
               style={{
