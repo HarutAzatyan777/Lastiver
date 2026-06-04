@@ -35,7 +35,7 @@ function MenuSection({ section, index }) {
   const visibleItems = isExpanded ? items : items.slice(0, ITEMS_LIMIT);
 
   return (
-    <div id={sectionId} style={{ marginBottom: "2rem" }}>
+    <div id={sectionId} className="menu-section-container" style={{ marginBottom: "2rem" }}>
       <div className="qr-menu-section-title">
         <img
           src={section.iconUrl || "/icon.png"}
@@ -169,6 +169,12 @@ export default function QrMenuPage() {
   }));
 
   useEffect(() => {
+    // Էջը թարմացնելիս (refresh) ավտոմատ բարձրանալ ամենավերև
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+
     const fetchMenu = async () => {
       try {
         const q = query(collection(db, "menu"), orderBy("order"));

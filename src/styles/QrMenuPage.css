@@ -11,6 +11,11 @@
   --muted-text: #7b8a8e;
 }
 
+/* Սահուն անցում բոլոր էլեմենտների համար */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Apply Roboto font globally */
 .qr-menu-page,
 .qr-menu-section h3,
@@ -106,6 +111,11 @@
   font-style: italic;
   color: var(--muted-text);
   margin-top: 2rem;
+}
+
+/* Ապահովում է հեռավորություն վերևից, երբ էջը սքրոլ է լինում տվյալ բաժին */
+.menu-section-container {
+  scroll-margin-top: 30px; 
 }
 
 /* Section wrapper */
