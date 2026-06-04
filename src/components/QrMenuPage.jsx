@@ -36,21 +36,7 @@ function MenuSection({ section, index }) {
 
   return (
     <div id={sectionId} style={{ marginBottom: "2rem" }}>
-      <h3
-        className="qr-menu-section-title"
-        style={{
-          backgroundColor: "rgba(255, 255, 255, 1)",
-          backdropFilter: "blur(8px)",
-          padding: "10px 20px",
-          borderRadius: "16px",
-          boxShadow: "0 8px 25px rgba(0, 0, 0, 0.15)",
-          display: "inline-flex",
-          borderBottom: "none",
-          color: "#2b2b2b",
-          marginBottom: "1rem",
-          marginTop: 0,
-        }}
-      >
+      <div className="qr-menu-section-title">
         <img
           src={section.iconUrl || "/icon.png"}
           alt="Category Icon"
@@ -72,7 +58,7 @@ function MenuSection({ section, index }) {
             </span>
           )}
         </span>
-      </h3>
+      </div>
 
       <div
         className="qr-menu-section fade-in"
