@@ -9,7 +9,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ----- Sticky (Fixed) State ----- */
@@ -18,12 +18,22 @@
   backdrop-filter: blur(10px);
   margin: 0 -1rem 1.5rem -1rem; /* Ձգվում է էջի եզրերով (լրացնում է padding-ը) */
   padding: 0.75rem 1rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 0 0 16px 16px;
 }
 
+.nav-item-text {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 20px;
+  opacity: 1;
+  overflow: hidden;
+}
+
 .qr-nav.sticky .nav-item-text {
-  display: none;
+  max-height: 0;
+  opacity: 0;
+  margin-top: -4px; /* Չեզոքացնում է gap: 4px-ը */
 }
 
 .qr-nav.sticky .qr-nav-button {
@@ -90,7 +100,7 @@
   border-radius: 30px;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
@@ -100,7 +110,21 @@
 
 /* ----- Active Button ----- */
 .qr-nav-button.active {
-
   border-color: var(--primary-color);
   box-shadow: 0 4px 15px rgba(91, 75, 138, 0.3);
+}
+
+/* ----- Active Icon Animation (Sticky Mode) ----- */
+@keyframes subtle-bounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.15);
+  }
+}
+
+.qr-nav.sticky .qr-nav-button.active img {
+  animation: subtle-bounce 2s ease-in-out infinite;
 }
