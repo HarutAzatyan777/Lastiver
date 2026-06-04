@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import "../styles/QrMenuPage.css";
 import Nav from "../components/Nav";
 import ScrollToTop from "../components/ScrollToTop";
+import Skeleton from "./Skeleton";
 
 /* ----- Օգնական ֆունկցիա slugify-ի համար ----- */
 function slugify(text) {
@@ -27,31 +35,27 @@ function MenuSection({ section, index }) {
   const visibleItems = isExpanded ? items : items.slice(0, ITEMS_LIMIT);
 
   return (
-    <div
-      id={sectionId}
-      className="qr-menu-section fade-in"
-      style={{
-        animationDelay: `${index * 100}ms`,
-        backgroundImage: section.itemsBackgroundUrl
-          ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), url("${section.itemsBackgroundUrl}")`
-          : "none",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        color: section.itemsBackgroundUrl ? "#fff" : "inherit",
-        borderRadius: "16px",
-        boxShadow: section.itemsBackgroundUrl
-          ? "0 8px 20px rgba(0,0,0,0.3)"
-          : "none",
-        overflow: "hidden", // Որպեսզի նկարը չանցնի կլորացված անկյուններից
-        minHeight: "380px", // Ապահովում է հաստատուն չափ, եթե նույնիսկ ապրանքները 4-ից քիչ են
-      }}
-    >
-      <h3 className="qr-menu-section-title">
+    <div id={sectionId} style={{ marginBottom: "2rem" }}>
+      <h3
+        className="qr-menu-section-title"
+        style={{
+          backgroundColor: "rgba(255, 255, 255, 1)",
+          backdropFilter: "blur(8px)",
+          padding: "10px 20px",
+          borderRadius: "16px",
+          boxShadow: "0 8px 25px rgba(0, 0, 0, 0.15)",
+          display: "inline-flex",
+          borderBottom: "none",
+          color: "#2b2b2b",
+          marginBottom: "1rem",
+          marginTop: 0,
+        }}
+      >
         <img
           src={section.iconUrl || "/icon.png"}
           alt="Category Icon"
           className="section-icon"
+          style={{ mixBlendMode: "multiply" }}
         />
         <span className="section-title-text">
           {section.category}
@@ -59,7 +63,7 @@ function MenuSection({ section, index }) {
             <span
               style={{
                 fontSize: "0.8em",
-                color: section.itemsBackgroundUrl ? "#ddd" : "#666",
+                color: "#666",
                 marginLeft: "8px",
                 fontWeight: "normal",
               }}
@@ -70,60 +74,97 @@ function MenuSection({ section, index }) {
         </span>
       </h3>
 
-      <ul className="qr-menu-items">
-        {visibleItems.map((item, idx) => (
-          <li key={idx} className="qr-menu-item">
-            {item.imageUrl && (
-              <img
-                src={item.imageUrl}
-                alt={item.nameEn || item.nameHy || "Menu item image"}
-                className="qr-menu-item-image"
-              />
-            )}
-            <div className="qr-menu-item-text">
-              <div className="qr-menu-item-line">
-                <span className="item-name-block">
-                  {item.nameEn && (
-                    <span className="item-name-en">{item.nameEn}</span>
-                  )}
-                  {item.nameHy && (
-                    <span className="item-name-hy">{item.nameHy}</span>
-                  )}
-                </span>
-                <span className="dots"></span>
-                <strong className="item-price">{item.price} AMD</strong>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      {hasMore && (
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: "10px",
-            paddingBottom: "15px",
-          }}
-        >
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
+      <div
+        className="qr-menu-section fade-in"
+        style={{
+          animationDelay: `${index * 100}ms`,
+          background: section.itemsBackgroundUrl ? "#1a1a20" : undefined,
+          color: section.itemsBackgroundUrl ? "#fff" : "inherit",
+          borderRadius: "16px",
+          boxShadow: section.itemsBackgroundUrl
+            ? "0 8px 20px rgba(0,0,0,0.3)"
+            : "none",
+          overflow: "hidden", // Որպեսզի նկարը չանցնի կլորացված անկյուններից
+          minHeight: "380px", // Ապահովում է հաստատուն չափ, եթե նույնիսկ ապրանքները 4-ից քիչ են
+          position: "relative",
+          marginBottom: 0,
+        }}
+      >
+        {/* Ֆիքսված բարձրությամբ ֆոնային նկար, որը չի լոճվի (zoom) ավելին բացելիս */}
+        {section.itemsBackgroundUrl && (
+          <div
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.9)",
-              color: "#333",
-              border: "none",
-              padding: "8px 24px",
-              borderRadius: "20px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-              transition: "background 0.3s ease",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "450px", // Նկարը մնում է 450px բարձրության վրա
+              backgroundImage: `linear-gradient(to bottom, rgba(26,26,32,0.2) 0%, rgba(26,26,32,0.8) 75%, #1a1a20 100%), url("${section.itemsBackgroundUrl}")`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              zIndex: 0,
+              pointerEvents: "none",
             }}
-          >
-            {isExpanded ? "Փակել ⬆" : "Տեսնել ավելին ⬇"}
-          </button>
+          />
+        )}
+
+        {/* Պարունակությունը դնում ենք relative, որպեսզի նկարի վրայով երևա */}
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <ul className="qr-menu-items">
+            {visibleItems.map((item, idx) => (
+              <li key={idx} className="qr-menu-item">
+                {item.imageUrl && (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.nameEn || item.nameHy || "Menu item image"}
+                    className="qr-menu-item-image"
+                  />
+                )}
+                <div className="qr-menu-item-text">
+                  <div className="qr-menu-item-line">
+                    <span className="item-name-block">
+                      {item.nameEn && (
+                        <span className="item-name-en">{item.nameEn}</span>
+                      )}
+                      {item.nameHy && (
+                        <span className="item-name-hy">{item.nameHy}</span>
+                      )}
+                    </span>
+                    <strong className="item-price">{item.price} AMD</strong>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {hasMore && (
+            <div
+              style={{
+                textAlign: "center",
+                marginTop: "10px",
+                paddingBottom: "15px",
+              }}
+            >
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  color: "#333",
+                  border: "none",
+                  padding: "8px 24px",
+                  borderRadius: "20px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                  transition: "background 0.3s ease",
+                }}
+              >
+                {isExpanded ? "Փակել ⬆" : "Տեսնել ավելին ⬇"}
+              </button>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -132,6 +173,8 @@ function MenuSection({ section, index }) {
 export default function QrMenuPage() {
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [globalTopImage, setGlobalTopImage] = useState("");
+  const [globalLogo, setGlobalLogo] = useState("");
 
   const categories = [...new Set(menu.map((s) => s.category))];
   const categorySlugs = categories.map((cat) => ({
@@ -156,28 +199,72 @@ export default function QrMenuPage() {
       }
     };
 
-    fetchMenu();
+    const fetchSettings = async () => {
+      try {
+        const docSnap = await getDoc(doc(db, "settings", "global"));
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setGlobalTopImage(data.topImageUrl || "");
+          setGlobalLogo(data.logoUrl || "");
+        }
+      } catch (e) {
+        console.error("Չհաջողվեց բեռնել կարգավորումները։", e);
+      }
+    };
+
+    Promise.all([fetchMenu(), fetchSettings()]);
   }, []);
 
   return (
     <div className="qr-menu-page">
-      <h2 className="menu-title">
-        <img src="/logo.jpg" alt="Lastiver Logo" className="menu-logo" />
-      </h2>
+      <div className="header-section">
+        {globalTopImage && (
+          <div className="top-banner-container">
+            <img
+              src={globalTopImage}
+              alt="Top Banner"
+              className="top-banner-image"
+            />
+          </div>
+        )}
+        <div className={`logo-container ${globalTopImage ? "overlapped" : ""}`}>
+          <img
+            src={globalLogo || "/logo.jpg"}
+            alt="Lastiver Logo"
+            className="main-logo"
+          />
+        </div>
+      </div>
 
       <Nav categories={categorySlugs} />
 
       {loading ? (
-        <div className="loader" aria-label="Մենյուն բեռնվում է...">
-          <span>Մենյուն բեռնվում է...</span>
-        </div>
+        <Skeleton />
       ) : menu.length === 0 ? (
         <p className="empty-state">
           Մենյուն դեռ դատարկ է։ Խնդրում ենք փորձել ավելի ուշ կամ կապվել մեզ հետ։
         </p>
       ) : (
         menu.map((section, index) => (
-          <MenuSection key={section.id} section={section} index={index} />
+          <div key={section.id}>
+            <MenuSection section={section} index={index} />
+            {section.intermediateImageUrl && (
+              <div
+                className="intermediate-image-container fade-in"
+                style={{ textAlign: "center", margin: "20px 0" }}
+              >
+                <img
+                  src={section.intermediateImageUrl}
+                  alt="Intermediate Banner"
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    borderRadius: "16px",
+                  }}
+                />
+              </div>
+            )}
+          </div>
         ))
       )}
 

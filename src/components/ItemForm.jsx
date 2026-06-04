@@ -53,6 +53,9 @@ export default function ItemForm({
         value={itemPrice}
         onChange={(e) => setItemPrice(e.target.value)}
       />
+      <div style={{ fontSize: "0.85rem", color: "#666", marginBottom: "4px", marginTop: "10px" }}>
+        <strong>🍔 Ապրանքի Նկար:</strong> Փոքր նկար ապրանքի անվան կողքին (1:1)
+      </div>
       <div
         style={{
           display: "flex",

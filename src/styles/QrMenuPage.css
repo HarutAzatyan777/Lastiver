@@ -1,11 +1,11 @@
 /* Import Roboto font */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
 
 /* Define main colors as CSS variables */
 :root {
-  --primary-color: #5B4B8A;
-  --primary-light: #A79CD9;
-  --bg-soft: #F4F1FA;
+  --primary-color: #5b4b8a;
+  --primary-light: #a79cd9;
+  --bg-soft: #f4f1fa;
   --border-light: #dcd6ec;
   --text-color: #2e3d49;
   --muted-text: #7b8a8e;
@@ -22,7 +22,7 @@
 .item-name-block,
 .item-name-en,
 .item-name-hy {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 /* Gradient background + container styles */
@@ -37,25 +37,46 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
-/* Menu title section */
-.menu-title {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 2.4rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: var(--primary-color);
+/* Header Section (Banner + Logo) */
+.header-section {
+  position: relative;
+  margin-bottom: 1.5rem;
   text-align: center;
-  text-shadow: 1px 1px 2px rgba(91, 75, 138, 0.1);
 }
 
-.menu-logo {
-  width: 100px;
-  height: auto;
-  display: block;
-  margin: 0 auto;
+.top-banner-container {
+  width: 100%;
+  height: 180px; /* Ֆիքսված, կոմպակտ բարձրություն բանների համար */
+}
+
+.top-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+.logo-container.overlapped {
+  margin-top: -60px; /* Բարձրացնում է լոգոն բանների վրա */
+}
+
+.main-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  background-color: #fff;
+  border-radius: 50%;
+  border: 4px solid #f6f8fc; /* Համընկնում է ֆոնի հետ */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  padding: 8px; /* Որպեսզի լոգոն չկպչի եզրերին */
 }
 
 /* Loader */
@@ -129,29 +150,45 @@
 .qr-menu-item {
   display: flex;
   align-items: center;
-  margin-bottom: 0.75rem;
-  background: #f9fafc;
-  opacity: 0.9;
-  border-radius: 10px;
-  padding: 0.75rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e0e6f0;
-  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 1rem;
+  background: #ffffff;
+  opacity: 0.95;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent; /* Հեռացնում է կապույտ թարթումը մոբայլում */
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .qr-menu-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* Երբ սեղմում ենք քարտի վրա (Active state) */
+.qr-menu-item:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .qr-menu-item img {
-  width: 50px;
-  height: 50px;
+  width: 75px;
+  height: 75px;
   object-fit: cover;
-  border-radius: 50%;
-  border: 2px solid var(--primary-color);
-  margin-right: 1rem;
+  border-radius: 12px;
+  margin-right: 1.25rem;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+/* Նկարի թեթև խոշորացում մկնիկը վրան պահելիս */
+.qr-menu-item:hover img {
+  transform: scale(1.05);
 }
 
 /* Item text */
@@ -159,45 +196,43 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  justify-content: center;
 }
 
 .qr-menu-item-line {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  gap: 1rem;
 }
 
 .item-name-block {
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
 .item-name-en {
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: var(--text-color);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #2b2b2b;
+  line-height: 1.2;
 }
 
 .item-name-hy {
   font-size: 0.75rem;
-  color: #d62828;
-  margin-top: 2px;
+  color: var(--muted-text);
+  font-weight: 500;
 }
 
-.qr-menu-item-line .dots {
-  flex: 1;
-  border-bottom: 1px dotted #a2a2a2;
-  margin: 0 0.5rem;
-  height: 0;
-  align-self: center;
-}
-
-.qr-menu-item-line .item-price {
+.item-price {
   white-space: nowrap;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 1.05rem;
   color: var(--primary-color);
-  align-self: center;
+  background: var(--bg-soft);
+  padding: 6px 12px;
+  border-radius: 10px;
 }
 
 /* Info box */
@@ -234,23 +269,22 @@
 
 /* Responsive */
 @media (max-width: 600px) {
-  .menu-title {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .qr-menu-item {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 0.8rem;
   }
 
   .qr-menu-item img {
-    margin-right: 0;
-    margin-bottom: 0.5rem;
+    width: 65px;
+    height: 65px;
+    margin-right: 1rem;
   }
 
-  .qr-menu-item-line {
-    flex-direction: row;
-    width: 100%;
+  .item-name-en {
+    font-size: 1.05rem;
+  }
+
+  .item-price {
+    padding: 4px 8px;
+    font-size: 0.95rem;
   }
 }

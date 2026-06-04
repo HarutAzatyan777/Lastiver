@@ -9,8 +9,15 @@ import {
   deleteDoc,
   arrayUnion,
   arrayRemove,
+  getDoc,
+  setDoc,
 } from "firebase/firestore";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
 import { db } from "../firebase";
 import CategoryForm from "./CategoryForm";
 import ItemForm from "./ItemForm";
@@ -27,6 +34,7 @@ import {
   FaTrash,
   FaFileImport,
   FaSpinner,
+  FaTimes,
 } from "react-icons/fa";
 
 const menuRef = collection(db, "menu");
@@ -37,12 +45,15 @@ export default function AdminPanelFirebase() {
   const [categoryEn, setCategoryEn] = useState("");
   const [categoryIconUrl, setCategoryIconUrl] = useState("");
   const [categoryItemsBgUrl, setCategoryItemsBgUrl] = useState("");
+  const [categoryIntermediateImageUrl, setCategoryIntermediateImageUrl] = useState("");
 
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
   const [editingCategoryNameEn, setEditingCategoryNameEn] = useState("");
   const [editingCategoryIconUrl, setEditingCategoryIconUrl] = useState("");
-  const [editingCategoryItemsBgUrl, setEditingCategoryItemsBgUrl] = useState("");
+  const [editingCategoryItemsBgUrl, setEditingCategoryItemsBgUrl] =
+    useState("");
+  const [editingCategoryIntermediateImageUrl, setEditingCategoryIntermediateImageUrl] = useState("");
 
   const [selectedCatId, setSelectedCatId] = useState("");
   const [itemNameHy, setItemNameHy] = useState("");
@@ -65,6 +76,11 @@ export default function AdminPanelFirebase() {
   const [isUploading, setIsUploading] = useState(false);
   const [expandedCats, setExpandedCats] = useState({}); // Պահում է բացված բաժինների վիճակը
   const [cropData, setCropData] = useState(null); // Նկարի կտրման տվյալներ
+  const [toastMessage, setToastMessage] = useState(null);
+  const [globalTopImageUrl, setGlobalTopImageUrl] = useState("");
+  const [globalLogoUrl, setGlobalLogoUrl] = useState("");
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [bulkTargetCatId, setBulkTargetCatId] = useState("");
 
   const loadMenu = async () => {
     const snapshot = await getDocs(menuRef);
@@ -73,9 +89,34 @@ export default function AdminPanelFirebase() {
     setMenu(data);
   };
 
+  const loadSettings = async () => {
+    const docSnap = await getDoc(doc(db, "settings", "global"));
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      setGlobalTopImageUrl(data.topImageUrl || "");
+      setGlobalLogoUrl(data.logoUrl || "");
+    }
+  };
+
   useEffect(() => {
     loadMenu();
+    loadSettings();
   }, []);
+
+  const saveGlobalSettings = async () => {
+    setIsUploading(true);
+    await setDoc(doc(db, "settings", "global"), { 
+      topImageUrl: globalTopImageUrl,
+      logoUrl: globalLogoUrl
+    }, { merge: true });
+    setIsUploading(false);
+    showToast("✅ Գլխավոր կարգավորումները պահպանվեցին։");
+  };
+
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 5000);
+  };
 
   useEffect(() => {
     if (editingCategory || editingItem) {
@@ -100,6 +141,7 @@ export default function AdminPanelFirebase() {
       categoryEn,
       iconUrl: categoryIconUrl,
       itemsBackgroundUrl: categoryItemsBgUrl,
+      intermediateImageUrl: categoryIntermediateImageUrl,
       items: [],
       order: highestOrder + 1,
     });
@@ -107,6 +149,7 @@ export default function AdminPanelFirebase() {
     setCategoryEn("");
     setCategoryIconUrl("");
     setCategoryItemsBgUrl("");
+    setCategoryIntermediateImageUrl("");
     loadMenu();
   };
 
@@ -116,6 +159,7 @@ export default function AdminPanelFirebase() {
     setEditingCategoryNameEn(cat.categoryEn || "");
     setEditingCategoryIconUrl(cat.iconUrl || "");
     setEditingCategoryItemsBgUrl(cat.itemsBackgroundUrl || "");
+    setEditingCategoryIntermediateImageUrl(cat.intermediateImageUrl || "");
   };
 
   const editCategory = async () => {
@@ -126,12 +170,14 @@ export default function AdminPanelFirebase() {
       categoryEn: editingCategoryNameEn,
       iconUrl: editingCategoryIconUrl,
       itemsBackgroundUrl: editingCategoryItemsBgUrl,
+      intermediateImageUrl: editingCategoryIntermediateImageUrl,
     });
     setEditingCategory(null);
     setEditingCategoryName("");
     setEditingCategoryNameEn("");
     setEditingCategoryIconUrl("");
     setEditingCategoryItemsBgUrl("");
+    setEditingCategoryIntermediateImageUrl("");
     loadMenu();
   };
 
@@ -141,6 +187,7 @@ export default function AdminPanelFirebase() {
     setEditingCategoryNameEn("");
     setEditingCategoryIconUrl("");
     setEditingCategoryItemsBgUrl("");
+    setEditingCategoryIntermediateImageUrl("");
   };
 
   const askDeleteCategory = (id) => {
@@ -176,6 +223,20 @@ export default function AdminPanelFirebase() {
   // -- Item --
   const addItem = async () => {
     if ((!itemNameHy && !itemNameEn) || !itemPrice || !selectedCatId) return;
+
+    const categoryToUpdate = menu.find((cat) => cat.id === selectedCatId);
+    if (categoryToUpdate && categoryToUpdate.items) {
+      const isDuplicate = categoryToUpdate.items.some(
+        (item) =>
+          (itemNameHy && item.nameHy === itemNameHy) ||
+          (itemNameEn && item.nameEn === itemNameEn),
+      );
+      if (isDuplicate) {
+            showToast("❌ Այս անվանումով ապրանք արդեն գոյություն ունի ընտրված բաժնում։");
+        return;
+      }
+    }
+
     const ref = doc(db, "menu", selectedCatId);
     await updateDoc(ref, {
       items: arrayUnion({
@@ -190,6 +251,7 @@ export default function AdminPanelFirebase() {
     setItemPrice("");
     setImageUrl("");
     loadMenu();
+    showToast("✅ Ապրանքը հաջողությամբ ավելացվեց։");
   };
 
   const startEditingItem = (catId, item, idx) => {
@@ -263,6 +325,80 @@ export default function AdminPanelFirebase() {
     setConfirmDelete({ visible: true, type: "item", payload: { catId, item } });
   };
 
+  // -- Bulk Actions Logic --
+  const isItemSelected = (catId, item) => {
+    return selectedItems.some((si) => si.catId === catId && si.original.nameHy === item.nameHy && si.original.nameEn === item.nameEn);
+  };
+
+  const toggleItemSelection = (catId, item) => {
+    setSelectedItems((prev) => {
+      const exists = prev.find((si) => si.catId === catId && si.original.nameHy === item.nameHy && si.original.nameEn === item.nameEn);
+      if (exists) {
+        return prev.filter((si) => si !== exists);
+      } else {
+        return [...prev, { catId, original: item }];
+      }
+    });
+  };
+
+  const askBulkDelete = () => {
+    setConfirmDelete({ visible: true, type: "bulkItems", payload: selectedItems });
+  };
+
+  const handleBulkMove = async () => {
+    if (!bulkTargetCatId || selectedItems.length === 0) return;
+    setIsUploading(true);
+    try {
+      const newMenu = menu.map((c) => ({ ...c, items: [...(c.items || [])] }));
+      const itemsToMove = selectedItems.map((si) => si.original);
+
+      // Remove from old categories
+      selectedItems.forEach((si) => {
+        const cat = newMenu.find((c) => c.id === si.catId);
+        if (cat && cat.id !== bulkTargetCatId) {
+          cat.items = cat.items.filter((item) => !(item.nameHy === si.original.nameHy && item.nameEn === si.original.nameEn));
+        }
+      });
+
+      // Add to target category
+      const targetCat = newMenu.find((c) => c.id === bulkTargetCatId);
+      if (targetCat) {
+        itemsToMove.forEach((newItem) => {
+          const exists = targetCat.items.some(
+            (existing) =>
+              (newItem.nameHy && existing.nameHy === newItem.nameHy) ||
+              (newItem.nameEn && existing.nameEn === newItem.nameEn)
+          );
+          if (!exists) {
+            targetCat.items.push(newItem);
+          }
+        });
+      }
+
+      const affectedCatIds = new Set(selectedItems.map((si) => si.catId));
+      affectedCatIds.add(bulkTargetCatId);
+
+      const promises = Array.from(affectedCatIds).map((id) => {
+        const updatedCat = newMenu.find((c) => c.id === id);
+        if (updatedCat) {
+          return updateDoc(doc(db, "menu", id), { items: updatedCat.items });
+        }
+        return Promise.resolve();
+      });
+
+      await Promise.all(promises);
+      setSelectedItems([]);
+      setBulkTargetCatId("");
+      loadMenu();
+      showToast("✅ Ապրանքները հաջողությամբ տեղափոխվեցին։");
+    } catch (error) {
+      console.error(error);
+      showToast("❌ Սխալ առաջացավ տեղափոխման ժամանակ։");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!confirmDelete.visible) return;
 
@@ -272,6 +408,29 @@ export default function AdminPanelFirebase() {
       const { catId, item } = confirmDelete.payload;
       const ref = doc(db, "menu", catId);
       await updateDoc(ref, { items: arrayRemove(item) });
+    } else if (confirmDelete.type === "bulkItems") {
+      const itemsToDelete = confirmDelete.payload;
+      const newMenu = menu.map((c) => ({ ...c, items: [...(c.items || [])] }));
+
+      itemsToDelete.forEach((si) => {
+        const cat = newMenu.find((c) => c.id === si.catId);
+        if (cat) {
+          cat.items = cat.items.filter((item) => !(item.nameHy === si.original.nameHy && item.nameEn === si.original.nameEn));
+        }
+      });
+
+      const affectedCatIds = new Set(itemsToDelete.map((si) => si.catId));
+      const promises = Array.from(affectedCatIds).map((id) => {
+        const updatedCat = newMenu.find((c) => c.id === id);
+        if (updatedCat) {
+          return updateDoc(doc(db, "menu", id), { items: updatedCat.items });
+        }
+        return Promise.resolve();
+      });
+
+      await Promise.all(promises);
+      setSelectedItems([]);
+      showToast("✅ Ընտրված ապրանքները ջնջվեցին։");
     }
 
     setConfirmDelete({ visible: false, type: null, payload: null });
@@ -299,17 +458,17 @@ export default function AdminPanelFirebase() {
   const handleCategoryDrop = async (e, index) => {
     e.preventDefault();
     if (draggedCatIdx === null || draggedCatIdx === index) return;
-    
+
     const newMenu = [...menu];
     const [moved] = newMenu.splice(draggedCatIdx, 1);
     newMenu.splice(index, 0, moved);
-    
+
     setMenu(newMenu); // Արագ թարմացում էկրանին
     setDraggedCatIdx(null);
 
     // Թարմացում Firebase-ում
     const promises = newMenu.map((cat, i) =>
-      updateDoc(doc(db, "menu", cat.id), { order: i + 1 })
+      updateDoc(doc(db, "menu", cat.id), { order: i + 1 }),
     );
     await Promise.all(promises);
   };
@@ -326,7 +485,11 @@ export default function AdminPanelFirebase() {
   const handleItemDrop = async (e, catId, index) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!draggedItem || draggedItem.catId !== catId || draggedItem.index === index) {
+    if (
+      !draggedItem ||
+      draggedItem.catId !== catId ||
+      draggedItem.index === index
+    ) {
       setDraggedItem(null);
       return;
     }
@@ -335,7 +498,9 @@ export default function AdminPanelFirebase() {
     const newItems = [...(category.items || [])];
     const [moved] = newItems.splice(draggedItem.index, 1);
     newItems.splice(index, 0, moved);
-    const newMenu = menu.map((c) => (c.id === catId ? { ...c, items: newItems } : c));
+    const newMenu = menu.map((c) =>
+      c.id === catId ? { ...c, items: newItems } : c,
+    );
     setMenu(newMenu); // Արագ թարմացում էկրանին
     setDraggedItem(null);
     await updateDoc(doc(db, "menu", catId), { items: newItems });
@@ -391,6 +556,9 @@ export default function AdminPanelFirebase() {
         // Group items by category
         const groupedData = {};
         let foundRows = 0;
+        let duplicateInternal = 0;
+        let duplicateFirebase = 0;
+        let addedCount = 0;
 
         data.forEach((rawRow) => {
           // Ջնջել թաքնված նշանները (BOM) և բացատները վերնագրերից
@@ -409,23 +577,37 @@ export default function AdminPanelFirebase() {
           const cat = row["category"] || row["բաժին"];
           if (!cat) return; // Skip invalid rows
           if (!groupedData[cat]) groupedData[cat] = [];
-          groupedData[cat].push({
-            nameEn:
-              row["nameen"] ||
-              row["name (en)"] ||
-              row["անուն (անգլ)"] ||
-              row["english"] ||
-              "",
-            nameHy:
-              row["namehy"] ||
-              row["name (hy)"] ||
-              row["անուն (հայ)"] ||
-              row["հայերեն"] ||
-              "",
-            price: row["price"] || row["գին"] || "",
-            imageUrl: row["imageurl"] || row["նկարի հղում"] || "",
-          });
-          foundRows++;
+
+          const nameEnVal =
+            row["nameen"] ||
+            row["name (en)"] ||
+            row["անուն (անգլ)"] ||
+            row["english"] ||
+            "";
+          const nameHyVal =
+            row["namehy"] ||
+            row["name (hy)"] ||
+            row["անուն (հայ)"] ||
+            row["հայերեն"] ||
+            "";
+
+          const isDuplicate = groupedData[cat].some(
+            (item) =>
+              (nameHyVal && item.nameHy === nameHyVal) ||
+              (nameEnVal && item.nameEn === nameEnVal),
+          );
+
+          if (isDuplicate) {
+            duplicateInternal++;
+          } else {
+            groupedData[cat].push({
+              nameEn: nameEnVal,
+              nameHy: nameHyVal,
+              price: row["price"] || row["գին"] || "",
+              imageUrl: row["imageurl"] || row["նկարի հղում"] || "",
+            });
+            foundRows++;
+          }
         });
 
         if (foundRows === 0) {
@@ -446,20 +628,40 @@ export default function AdminPanelFirebase() {
           const existingCat = menu.find((c) => c.category === catName);
           if (existingCat) {
             const ref = doc(db, "menu", existingCat.id);
-            const newItems = [...(existingCat.items || []), ...items];
-            await updateDoc(ref, { items: newItems });
+
+            const uniqueNewItems = items.filter((newItem) => {
+              return !(existingCat.items || []).some(
+                (existingItem) =>
+                  (newItem.nameHy && existingItem.nameHy === newItem.nameHy) ||
+                  (newItem.nameEn && existingItem.nameEn === newItem.nameEn),
+              );
+            });
+
+            duplicateFirebase += items.length - uniqueNewItems.length;
+
+            if (uniqueNewItems.length > 0) {
+              addedCount += uniqueNewItems.length;
+              const newItems = [
+                ...(existingCat.items || []),
+                ...uniqueNewItems,
+              ];
+              await updateDoc(ref, { items: newItems });
+            }
           } else {
+            addedCount += items.length;
             highestOrder++;
             await addDoc(menuRef, {
               category: catName,
               iconUrl: "",
               itemsBackgroundUrl: "",
+              intermediateImageUrl: "",
               items: items,
               order: highestOrder,
             });
           }
         }
-        alert("Մենյուն հաջողությամբ ներմուծվեց։");
+        const totalSkipped = duplicateInternal + duplicateFirebase;
+        showToast(`Ներմուծումն ավարտվեց։\n✅ Ավելացվել է: ${addedCount} ապրանք\n❌ Մերժվել է: ${totalSkipped} կրկնօրինակ`);
         loadMenu();
       } catch (error) {
         console.error("Ներմուծման սխալ:", error);
@@ -473,10 +675,32 @@ export default function AdminPanelFirebase() {
   };
 
   // -- Image Upload Handler --
-  const handleFileUpload = (e, setUrlCallback, folderPath, aspect = null) => {
+  const handleFileUpload = async (e, setUrlCallback, folderPath, aspect = null) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
+    // Եթե ֆայլը GIF է, բաց ենք թողնում կտրելու (crop) փուլը, որպեսզի անիմացիան չկորչի
+    if (file.type === "image/gif") {
+      setIsUploading(true);
+      try {
+        const storage = getStorage();
+        const fileRef = storageRef(
+          storage,
+          `${folderPath}/${Date.now()}_${file.name}`,
+        );
+        await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(fileRef);
+        setUrlCallback(url);
+      } catch (error) {
+        console.error("GIF վերբեռնման սխալ:", error);
+        alert("GIF-ի վերբեռնումը ձախողվեց։ Համոզվեք որ Firebase Storage-ը միացված է։");
+      } finally {
+        setIsUploading(false);
+        e.target.value = null;
+      }
+      return;
+    }
+
     // Նախ կարդում ենք նկարը որպեսզի ցուցադրենք կտրելու մոդալում
     const reader = new FileReader();
     reader.onload = () => {
@@ -499,13 +723,18 @@ export default function AdminPanelFirebase() {
     setIsUploading(true);
     try {
       const storage = getStorage();
-      const fileRef = storageRef(storage, `${folderPath}/${Date.now()}_${fileName}`);
+      const fileRef = storageRef(
+        storage,
+        `${folderPath}/${Date.now()}_${fileName}`,
+      );
       await uploadBytes(fileRef, blob);
       const url = await getDownloadURL(fileRef);
       setUrlCallback(url);
     } catch (error) {
       console.error("Նկարի վերբեռնման սխալ:", error);
-      alert("Նկարի վերբեռնումը ձախողվեց։ Համոզվեք որ Firebase Storage-ը միացված է։");
+      alert(
+        "Նկարի վերբեռնումը ձախողվեց։ Համոզվեք որ Firebase Storage-ը միացված է։",
+      );
     } finally {
       setIsUploading(false);
     }
@@ -547,11 +776,15 @@ export default function AdminPanelFirebase() {
             }}
           >
             {isImporting ? (
-              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
                 <FaSpinner /> Ներմուծվում է...
               </span>
             ) : (
-              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
                 <FaFileImport /> Ներմուծել Excel-ից
               </span>
             )}
@@ -559,25 +792,113 @@ export default function AdminPanelFirebase() {
         </div>
       </div>
 
+      {/* Global Settings Section */}
+      <div
+        style={{
+          marginBottom: "20px",
+          padding: "15px",
+          border: "1px solid #ddd",
+          borderRadius: "8px",
+          background: "#f9f9f9",
+        }}
+      >
+        <h3>Գլխավոր կարգավորումներ</h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+        <div>
+          <div style={{ fontSize: "0.85rem", color: "#666", marginBottom: "4px" }}>
+            <strong>🌌 Գլխավոր Բաններ:</strong> Ցուցադրվում է էջի ամենավերևում (16:9)
+          </div>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <input
+              placeholder="Լոգոյի վերևի նկարի URL"
+              value={globalTopImageUrl}
+              onChange={(e) => setGlobalTopImageUrl(e.target.value)}
+              style={{ flex: 1, margin: 0 }}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileUpload(e, setGlobalTopImageUrl, "settings", 16 / 9)}
+              disabled={isUploading}
+            />
+            {globalTopImageUrl && (
+              <img
+                src={globalTopImageUrl}
+                alt="Top Banner"
+                style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 4 }}
+              />
+            )}
+          </div>
+        </div>
+        
+        <div>
+          <div style={{ fontSize: "0.85rem", color: "#666", marginBottom: "4px" }}>
+            <strong>💠 Գլխավոր Լոգո:</strong> Խանութի լոգոն վերևի մասում (ազատ չափ կամ 1:1)
+          </div>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <input
+              placeholder="Գլխավոր լոգոյի URL (կփոխարինի logo.jpg-ին)"
+              value={globalLogoUrl}
+              onChange={(e) => setGlobalLogoUrl(e.target.value)}
+              style={{ flex: 1, margin: 0 }}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileUpload(e, setGlobalLogoUrl, "settings", null)} // null = ազատ կտրում (freeform aspect ratio)
+              disabled={isUploading}
+            />
+            {globalLogoUrl && (
+              <img
+                src={globalLogoUrl}
+                alt="Main Logo"
+                style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 4 }}
+              />
+            )}
+          </div>
+        </div>
+
+        <button
+          onClick={saveGlobalSettings}
+          disabled={isUploading}
+          style={{
+            padding: "8px 16px",
+            background: "#4CAF50",
+            color: "#fff",
+            border: "none",
+            borderRadius: "4px",
+            cursor: isUploading ? "wait" : "pointer",
+            alignSelf: "flex-start"
+          }}
+        >
+          {isUploading ? "Պահպանվում է..." : "Պահպանել"}
+        </button>
+      </div>
+      </div>
+
       <CategoryForm
         category={category}
         categoryEn={categoryEn}
         categoryIconUrl={categoryIconUrl}
         categoryItemsBgUrl={categoryItemsBgUrl}
+        categoryIntermediateImageUrl={categoryIntermediateImageUrl}
         setCategory={setCategory}
         setCategoryEn={setCategoryEn}
         setCategoryIconUrl={setCategoryIconUrl}
         setCategoryItemsBgUrl={setCategoryItemsBgUrl}
+        setCategoryIntermediateImageUrl={setCategoryIntermediateImageUrl}
         addCategory={addCategory}
         editingCategory={editingCategory}
         editingCategoryName={editingCategoryName}
         editingCategoryNameEn={editingCategoryNameEn}
         editingCategoryIconUrl={editingCategoryIconUrl}
         editingCategoryItemsBgUrl={editingCategoryItemsBgUrl}
+        editingCategoryIntermediateImageUrl={editingCategoryIntermediateImageUrl}
         setEditingCategoryName={setEditingCategoryName}
         setEditingCategoryNameEn={setEditingCategoryNameEn}
         setEditingCategoryIconUrl={setEditingCategoryIconUrl}
         setEditingCategoryItemsBgUrl={setEditingCategoryItemsBgUrl}
+        setEditingCategoryIntermediateImageUrl={setEditingCategoryIntermediateImageUrl}
         editCategory={editCategory}
         cancelCategoryEdit={cancelCategoryEdit}
         handleFileUpload={handleFileUpload}
@@ -624,9 +945,10 @@ export default function AdminPanelFirebase() {
               gap: "8px",
               cursor: "grab",
               opacity: draggedCatIdx === index ? 0.5 : 1,
-              backgroundColor: draggedCatIdx === index ? "#f9f9f9" : "transparent",
+              backgroundColor:
+                draggedCatIdx === index ? "#f9f9f9" : "transparent",
               padding: "4px",
-              borderRadius: "4px"
+              borderRadius: "4px",
             }}
             title="Բռնել և տեղափոխել բաժինը"
           >
@@ -642,15 +964,28 @@ export default function AdminPanelFirebase() {
                 fontSize: "16px",
                 padding: "0 8px",
               }}
-              title={expandedCats[sec.id] ? "Փակել ապրանքների ցանկը" : "Բացել ապրանքների ցանկը"}
+              title={
+                expandedCats[sec.id]
+                  ? "Փակել ապրանքների ցանկը"
+                  : "Բացել ապրանքների ցանկը"
+              }
             >
-              {expandedCats[sec.id] ? <FaChevronDown color="black" /> : <FaChevronRight color="black" />}
+              {expandedCats[sec.id] ? (
+                <FaChevronDown color="black" />
+              ) : (
+                <FaChevronRight color="black" />
+              )}
             </button>
             {sec.iconUrl && (
               <img
                 src={sec.iconUrl}
                 alt={`${sec.category} icon`}
-                style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 4 }}
+                style={{
+                  width: 40,
+                  height: 40,
+                  objectFit: "contain",
+                  borderRadius: 4,
+                }}
                 title="Icon"
               />
             )}
@@ -658,12 +993,24 @@ export default function AdminPanelFirebase() {
               <img
                 src={sec.itemsBackgroundUrl}
                 alt={`${sec.category} background`}
-                style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 4, border: "1px solid #ccc" }}
+                style={{
+                  width: 40,
+                  height: 40,
+                  objectFit: "cover",
+                  borderRadius: 4,
+                  border: "1px solid #ccc",
+                }}
                 title="Ֆոնային նկար"
               />
             )}
             <h3 style={{ margin: 0 }}>
-              {sec.category} {sec.categoryEn && <span style={{color: "gray", fontSize: "0.9em"}}> / {sec.categoryEn}</span>}
+              {sec.category}{" "}
+              {sec.categoryEn && (
+                <span style={{ color: "gray", fontSize: "0.9em" }}>
+                  {" "}
+                  / {sec.categoryEn}
+                </span>
+              )}
             </h3>
             <span className="reorder-buttons">
               <ActionButton
@@ -703,13 +1050,28 @@ export default function AdminPanelFirebase() {
                     gap: "10px",
                     marginBottom: "10px",
                     cursor: "grab",
-                    opacity: draggedItem?.catId === sec.id && draggedItem?.index === idx ? 0.5 : 1,
-                    backgroundColor: draggedItem?.catId === sec.id && draggedItem?.index === idx ? "#f9f9f9" : "transparent",
+                    opacity:
+                      draggedItem?.catId === sec.id &&
+                      draggedItem?.index === idx
+                        ? 0.5
+                        : 1,
+                    backgroundColor:
+                      draggedItem?.catId === sec.id &&
+                      draggedItem?.index === idx
+                        ? "#f9f9f9"
+                        : "transparent",
                     padding: "4px",
-                    borderRadius: "4px"
+                    borderRadius: "4px",
                   }}
                   title="Բռնել և տեղափոխել ապրանքը"
                 >
+                  <input
+                    type="checkbox"
+                    checked={isItemSelected(sec.id, item)}
+                    onChange={() => toggleItemSelection(sec.id, item)}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ width: "18px", height: "18px", cursor: "pointer", margin: "0 10px 0 0" }}
+                  />
                   {item.imageUrl && (
                     <img
                       src={item.imageUrl}
@@ -757,6 +1119,8 @@ export default function AdminPanelFirebase() {
           message={
             confirmDelete.type === "category"
               ? "Դուք ցանկանում եք ջնջել այս բաժինը?"
+              : confirmDelete.type === "bulkItems"
+              ? `Դուք ցանկանում եք ջնջել ընտրված ${confirmDelete.payload?.length} ապրանքները?`
               : "Դուք ցանկանում եք ջնջել այս կետը?"
           }
           onConfirm={handleConfirmDelete}
@@ -771,6 +1135,114 @@ export default function AdminPanelFirebase() {
           onCropConfirm={handleCropConfirm}
           onCancel={handleCropCancel}
         />
+      )}
+
+      {selectedItems.length > 0 && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "#fff",
+            padding: "15px",
+            borderRadius: "12px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            zIndex: 10000,
+            border: "1px solid #ddd",
+            width: "90%",
+            maxWidth: "600px",
+            flexWrap: "wrap",
+            justifyContent: "center"
+          }}
+        >
+          <strong style={{ whiteSpace: "nowrap" }}>Ընտրված է: {selectedItems.length}</strong>
+          <select
+            value={bulkTargetCatId}
+            onChange={(e) => setBulkTargetCatId(e.target.value)}
+            style={{ flex: 1, minWidth: "120px", padding: "8px", borderRadius: "6px", border: "1px solid #ccc", margin: 0 }}
+          >
+            <option value="">-- Տեղափոխել --</option>
+            {menu.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.category}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={handleBulkMove}
+            disabled={!bulkTargetCatId || isUploading}
+            style={{
+              padding: "8px 16px",
+              background: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: (!bulkTargetCatId || isUploading) ? "not-allowed" : "pointer",
+              margin: 0
+            }}
+          >
+            Տեղափոխել
+          </button>
+          <button
+            onClick={askBulkDelete}
+            style={{
+              padding: "8px 16px",
+              background: "#dc3545",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              margin: 0
+            }}
+          >
+            Ջնջել
+          </button>
+          <button
+            onClick={() => {
+              setSelectedItems([]);
+              setBulkTargetCatId("");
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "#666",
+              fontSize: "20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: 0,
+              padding: "8px"
+            }}
+            title="Չեղարկել"
+          >
+            <FaTimes />
+          </button>
+        </div>
+      )}
+
+      {toastMessage && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+            backgroundColor: "#333",
+            color: "#fff",
+            padding: "16px 24px",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            zIndex: 10000,
+            whiteSpace: "pre-line",
+            fontSize: "16px"
+          }}
+        >
+          {toastMessage}
+        </div>
       )}
     </div>
   );

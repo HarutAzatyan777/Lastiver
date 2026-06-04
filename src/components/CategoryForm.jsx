@@ -1,26 +1,36 @@
 import React from "react";
 import ActionButton from "./ActionButton";
-import { FaTimes, FaPlus, FaCheck, FaSpinner, FaLanguage } from "react-icons/fa";
+import {
+  FaTimes,
+  FaPlus,
+  FaCheck,
+  FaSpinner,
+  FaLanguage,
+} from "react-icons/fa";
 
 export default function CategoryForm({
   category,
   categoryEn,
   categoryIconUrl,
   categoryItemsBgUrl,
+  categoryIntermediateImageUrl,
   setCategory,
   setCategoryEn,
   setCategoryIconUrl,
   setCategoryItemsBgUrl,
+  setCategoryIntermediateImageUrl,
   addCategory,
   editingCategory,
   editingCategoryName,
   editingCategoryNameEn,
   editingCategoryIconUrl,
   editingCategoryItemsBgUrl,
+  editingCategoryIntermediateImageUrl,
   setEditingCategoryName,
   setEditingCategoryNameEn,
   setEditingCategoryIconUrl,
   setEditingCategoryItemsBgUrl,
+  setEditingCategoryIntermediateImageUrl,
   editCategory,
   cancelCategoryEdit,
   handleFileUpload,
@@ -30,7 +40,9 @@ export default function CategoryForm({
   const autoTranslate = async (text, setter) => {
     if (!text) return;
     try {
-      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=hy&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+      const res = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=hy&tl=en&dt=t&q=${encodeURIComponent(text)}`,
+      );
       const data = await res.json();
       if (data && data[0] && data[0][0] && data[0][0][0]) {
         setter(data[0][0][0]);
@@ -54,7 +66,13 @@ export default function CategoryForm({
           <button
             type="button"
             onClick={() => autoTranslate(category, setCategoryEn)}
-            style={{ padding: "0 10px", cursor: "pointer", background: "#f0f0f0", border: "1px solid #ccc", borderRadius: "4px" }}
+            style={{
+              padding: "0 10px",
+              cursor: "pointer",
+              background: "#f0f0f0",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
             title="Ավտոմատ թարգմանել անգլերեն"
           >
             <FaLanguage size={20} color="#555" />
@@ -65,6 +83,11 @@ export default function CategoryForm({
             onChange={(e) => setCategoryEn(e.target.value)}
             style={{ flex: 1, margin: 0 }}
           />
+        </div>
+        <div
+          style={{ fontSize: "0.85rem", color: "#666", marginBottom: "4px" }}
+        >
+          <strong>🖼️ Բաժնի Icon:</strong> Փոքր պատկերակ վերնագրի կողքին (1:1)
         </div>
         <div
           style={{
@@ -83,8 +106,8 @@ export default function CategoryForm({
           <input
             type="file"
             accept="image/*"
-            onChange={(e) =>
-              handleFileUpload(e, setCategoryIconUrl, "categories", 1) // 1:1 Icon
+            onChange={
+              (e) => handleFileUpload(e, setCategoryIconUrl, "categories", 1) // 1:1 Icon
             }
             disabled={isUploading}
           />
@@ -123,6 +146,12 @@ export default function CategoryForm({
           )}
         </div>
         <div
+          style={{ fontSize: "0.85rem", color: "#666", marginBottom: "4px" }}
+        >
+          <strong>🌄 Ֆոնային Նկար:</strong> Ցուցադրվում է բաժնի ապրանքների
+          հետևում (16:9)
+        </div>
+        <div
           style={{
             display: "flex",
             gap: "10px",
@@ -139,8 +168,9 @@ export default function CategoryForm({
           <input
             type="file"
             accept="image/*"
-            onChange={(e) =>
-              handleFileUpload(e, setCategoryItemsBgUrl, "categories", 16 / 9) // 16:9 Background
+            onChange={
+              (e) =>
+                handleFileUpload(e, setCategoryItemsBgUrl, "categories", 16 / 9) // 16:9 Background
             }
             disabled={isUploading}
           />
@@ -172,6 +202,73 @@ export default function CategoryForm({
                   fontSize: "10px",
                 }}
                 title="Ջնջել ֆոնը"
+              >
+                <FaTimes />
+              </button>
+            </div>
+          )}
+        </div>
+        <div
+          style={{ fontSize: "0.85rem", color: "#666", marginBottom: "4px" }}
+        >
+          <strong>🌉 Միջանկյալ Նկար:</strong> Մեծ բաններ այս բաժնի ավարտից
+          անմիջապես հետո (Instagram չափս՝ 1080x1080 կամ 1080x1350)
+        </div>
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            alignItems: "center",
+            marginBottom: "10px",
+          }}
+        >
+          <input
+            placeholder="Միջանկյալ նկարի URL (բաժնից հետո) 👉"
+            value={categoryIntermediateImageUrl}
+            onChange={(e) => setCategoryIntermediateImageUrl(e.target.value)}
+            style={{ flex: 1, margin: 0 }}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) =>
+              handleFileUpload(
+                e,
+                setCategoryIntermediateImageUrl,
+                "categories",
+                null, // Ազատ կտրում՝ Instagram չափսերի համար
+              )
+            }
+            disabled={isUploading}
+          />
+          {categoryIntermediateImageUrl && (
+            <div style={{ position: "relative", display: "flex" }}>
+              <img
+                src={categoryIntermediateImageUrl}
+                alt="Intermediate"
+                style={{
+                  width: 40,
+                  height: 40,
+                  objectFit: "cover",
+                  borderRadius: 4,
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setCategoryIntermediateImageUrl("")}
+                style={{
+                  position: "absolute",
+                  top: -8,
+                  right: -8,
+                  background: "white",
+                  border: "none",
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                  boxShadow: "0 0 3px rgba(0,0,0,0.5)",
+                  padding: "2px",
+                  fontSize: "10px",
+                }}
+                title="Ջնջել նկարը"
               >
                 <FaTimes />
               </button>
@@ -222,28 +319,46 @@ export default function CategoryForm({
             <p style={{ color: "red" }}>
               Խմբագրում ես: <strong>{editingCategory.category}</strong>
             </p>
-          <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-            <input
-              placeholder="Բաժին (Հայերեն)"
-              value={editingCategoryName}
-              onChange={(e) => setEditingCategoryName(e.target.value)}
-              style={{ flex: 1, margin: 0 }}
-            />
-            <button
-              type="button"
-              onClick={() => autoTranslate(editingCategoryName, setEditingCategoryNameEn)}
-              style={{ padding: "0 10px", cursor: "pointer", background: "#f0f0f0", border: "1px solid #ccc", borderRadius: "4px" }}
-              title="Ավտոմատ թարգմանել անգլերեն"
+            <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+              <input
+                placeholder="Բաժին (Հայերեն)"
+                value={editingCategoryName}
+                onChange={(e) => setEditingCategoryName(e.target.value)}
+                style={{ flex: 1, margin: 0 }}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  autoTranslate(editingCategoryName, setEditingCategoryNameEn)
+                }
+                style={{
+                  padding: "0 10px",
+                  cursor: "pointer",
+                  background: "#f0f0f0",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                }}
+                title="Ավտոմատ թարգմանել անգլերեն"
+              >
+                <FaLanguage size={20} color="#555" />
+              </button>
+              <input
+                placeholder="Category (English)"
+                value={editingCategoryNameEn}
+                onChange={(e) => setEditingCategoryNameEn(e.target.value)}
+                style={{ flex: 1, margin: 0 }}
+              />
+            </div>
+            <div
+              style={{
+                fontSize: "0.85rem",
+                color: "#666",
+                marginBottom: "4px",
+              }}
             >
-              <FaLanguage size={20} color="#555" />
-            </button>
-            <input
-              placeholder="Category (English)"
-              value={editingCategoryNameEn}
-              onChange={(e) => setEditingCategoryNameEn(e.target.value)}
-              style={{ flex: 1, margin: 0 }}
-            />
-          </div>
+              <strong>🖼️ Բաժնի Icon:</strong> Փոքր պատկերակ վերնագրի կողքին
+              (1:1)
+            </div>
             <div
               style={{
                 display: "flex",
@@ -261,8 +376,14 @@ export default function CategoryForm({
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) =>
-                  handleFileUpload(e, setEditingCategoryIconUrl, "categories", 1) // 1:1 Icon
+                onChange={
+                  (e) =>
+                    handleFileUpload(
+                      e,
+                      setEditingCategoryIconUrl,
+                      "categories",
+                      1,
+                    ) // 1:1 Icon
                 }
                 disabled={isUploading}
               />
@@ -302,6 +423,16 @@ export default function CategoryForm({
             </div>
             <div
               style={{
+                fontSize: "0.85rem",
+                color: "#666",
+                marginBottom: "4px",
+              }}
+            >
+              <strong>🌄 Ֆոնային Նկար:</strong> Ցուցադրվում է բաժնի ապրանքների
+              հետևում (16:9)
+            </div>
+            <div
+              style={{
                 display: "flex",
                 gap: "10px",
                 alignItems: "center",
@@ -322,7 +453,7 @@ export default function CategoryForm({
                     e,
                     setEditingCategoryItemsBgUrl,
                     "categories",
-                    16 / 9 // 16:9 Background
+                    16 / 9, // 16:9 Background
                   )
                 }
                 disabled={isUploading}
@@ -355,6 +486,79 @@ export default function CategoryForm({
                       fontSize: "10px",
                     }}
                     title="Ջնջել ֆոնը"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              )}
+            </div>
+            <div
+              style={{
+                fontSize: "0.85rem",
+                color: "#666",
+                marginBottom: "4px",
+              }}
+            >
+              <strong>🌉 Միջանկյալ Նկար:</strong> Մեծ բաններ այս բաժնի ավարտից
+              անմիջապես հետո (Instagram չափս՝ 1080x1080 կամ 1080x1350)
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignItems: "center",
+                marginBottom: "10px",
+              }}
+            >
+              <input
+                placeholder="Միջանկյալ նկարի URL (բաժնից հետո) 👉"
+                value={editingCategoryIntermediateImageUrl}
+                onChange={(e) =>
+                  setEditingCategoryIntermediateImageUrl(e.target.value)
+                }
+                style={{ flex: 1, margin: 0 }}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleFileUpload(
+                    e,
+                    setEditingCategoryIntermediateImageUrl,
+                    "categories",
+                    null, // Ազատ կտրում՝ Instagram չափսերի համար
+                  )
+                }
+                disabled={isUploading}
+              />
+              {editingCategoryIntermediateImageUrl && (
+                <div style={{ position: "relative", display: "flex" }}>
+                  <img
+                    src={editingCategoryIntermediateImageUrl}
+                    alt="Intermediate Preview"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      objectFit: "cover",
+                      borderRadius: 4,
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditingCategoryIntermediateImageUrl("")}
+                    style={{
+                      position: "absolute",
+                      top: -8,
+                      right: -8,
+                      background: "white",
+                      border: "none",
+                      borderRadius: "50%",
+                      cursor: "pointer",
+                      boxShadow: "0 0 3px rgba(0,0,0,0.5)",
+                      padding: "2px",
+                      fontSize: "10px",
+                    }}
+                    title="Ջնջել նկարը"
                   >
                     <FaTimes />
                   </button>

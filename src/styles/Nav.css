@@ -1,46 +1,82 @@
 /* ----- Base Styles ----- */
 
 .qr-nav {
-  border-bottom: 2px solid var(--border-light);
-  padding: 0.5rem 1rem;
-  gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(4px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  padding: 0.5rem 0;
+  margin-bottom: 1.5rem;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.qr-nav-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  /* Գրադիենտ, որն աջ և ձախ եզրերին fade է անում */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 5%,
+    black 95%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 5%,
+    black 95%,
+    transparent 100%
+  );
 }
 
 .qr-nav-buttons {
-  max-width: 800px;
-  margin: 0 auto;
   display: flex;
-  font-family: 'Roboto', sans-serif;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
+  font-family: "Roboto", sans-serif;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  cursor: grab; /* Ցույց է տալիս, որ կարելի է քաշել */
+  -webkit-overflow-scrolling: touch; /* Մոբայլում սահունություն */
+  user-select: none; /* Քաշելիս տեքստը չնշվի */
+}
+
+/* Երբ մկնիկով բռնած ենք (dragging) */
+.qr-nav-buttons.dragging {
+  cursor: grabbing;
+}
+
+/* Թաքցնում ենք scrollbar-ը գեղեցիկ տեսքի համար */
+.qr-nav-buttons::-webkit-scrollbar {
+  display: none;
 }
 
 .qr-nav-button {
   background-color: #ffffff;
   color: var(--text-color);
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-size: 0.95rem;
   font-weight: 500;
-  border: none;
-  padding: 0.5rem 1.2rem;
-  border-radius: 20px;
+  border: 1px solid #e0e6f0;
+  padding: 0.6rem 1.4rem;
+  border-radius: 30px;
   cursor: pointer;
-  transition: background 0.3s ease, color 0.3s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .qr-nav-button:hover {
-  background-color: var(--primary-light);
-  color: white;
+  background-color: #f6f8fc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* ----- Active Button ----- */
 .qr-nav-button.active {
   background-color: var(--primary-color);
   color: white;
-  box-shadow: 0 3px 8px rgba(91, 75, 138, 0.2);
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 15px rgba(91, 75, 138, 0.3);
 }
