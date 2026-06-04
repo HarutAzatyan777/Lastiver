@@ -6,6 +6,33 @@
   background: transparent;
   border: none;
   box-shadow: none;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ----- Sticky (Fixed) State ----- */
+.qr-nav.sticky {
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  margin: 0 -1rem 1.5rem -1rem; /* Ձգվում է էջի եզրերով (լրացնում է padding-ը) */
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  border-radius: 0 0 16px 16px;
+}
+
+.qr-nav.sticky .nav-item-text {
+  display: none;
+}
+
+.qr-nav.sticky .qr-nav-button {
+  padding: 0;
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  justify-content: center;
 }
 
 .qr-nav-wrapper {
@@ -68,15 +95,12 @@
 }
 
 .qr-nav-button:hover {
-  background-color: #f6f8fc;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-light);
 }
 
 /* ----- Active Button ----- */
 .qr-nav-button.active {
-  background-color: var(--primary-color);
-  color: white;
+
   border-color: var(--primary-color);
   box-shadow: 0 4px 15px rgba(91, 75, 138, 0.3);
 }

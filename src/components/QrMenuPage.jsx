@@ -12,6 +12,7 @@ import "../styles/QrMenuPage.css";
 import Nav from "../components/Nav";
 import ScrollToTop from "../components/ScrollToTop";
 import Skeleton from "./Skeleton";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 /* ----- Օգնական ֆունկցիա slugify-ի համար ----- */
 function slugify(text) {
@@ -35,7 +36,11 @@ function MenuSection({ section, index }) {
   const visibleItems = isExpanded ? items : items.slice(0, ITEMS_LIMIT);
 
   return (
-    <div id={sectionId} className="menu-section-container" style={{ marginBottom: "2rem" }}>
+    <div
+      id={sectionId}
+      className="menu-section-container"
+      style={{ marginBottom: "2rem" }}
+    >
       <div className="qr-menu-section-title">
         <img
           src={section.iconUrl || "/icon.png"}
@@ -132,20 +137,27 @@ function MenuSection({ section, index }) {
               }}
             >
               <button
+                className={`expand-btn ${!isExpanded ? "pulse" : ""}`}
                 onClick={() => setIsExpanded(!isExpanded)}
                 style={{
                   backgroundColor: "rgba(255, 255, 255, 0.9)",
                   color: "#333",
                   border: "none",
-                  padding: "8px 24px",
-                  borderRadius: "20px",
-                  fontWeight: "bold",
+                  padding: "10px",
+                  borderRadius: "50%",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   cursor: "pointer",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
                   transition: "background 0.3s ease",
                 }}
+                title={isExpanded ? "Փակել" : "Տեսնել ավելին"}
               >
-                {isExpanded ? "Փակել ⬆" : "Տեսնել ավելին ⬇"}
+                {isExpanded ? (
+                  <FaChevronUp size={20} />
+                ) : (
+                  <FaChevronDown size={20} />
+                )}
               </button>
             </div>
           )}
@@ -162,11 +174,18 @@ export default function QrMenuPage() {
   const [globalTopImage, setGlobalTopImage] = useState("");
   const [globalLogo, setGlobalLogo] = useState("");
 
-  const categories = [...new Set(menu.map((s) => s.category))];
-  const categorySlugs = categories.map((cat) => ({
-    name: cat,
-    slug: slugify(cat),
-  }));
+  const categorySlugs = [];
+  const seenCategories = new Set();
+  menu.forEach((s) => {
+    if (!seenCategories.has(s.category)) {
+      seenCategories.add(s.category);
+      categorySlugs.push({
+        name: s.category,
+        slug: slugify(s.category),
+        iconUrl: s.iconUrl,
+      });
+    }
+  });
 
   useEffect(() => {
     // Էջը թարմացնելիս (refresh) ավտոմատ բարձրանալ ամենավերև

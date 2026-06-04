@@ -45,7 +45,8 @@ export default function AdminPanelFirebase() {
   const [categoryEn, setCategoryEn] = useState("");
   const [categoryIconUrl, setCategoryIconUrl] = useState("");
   const [categoryItemsBgUrl, setCategoryItemsBgUrl] = useState("");
-  const [categoryIntermediateImageUrl, setCategoryIntermediateImageUrl] = useState("");
+  const [categoryIntermediateImageUrl, setCategoryIntermediateImageUrl] =
+    useState("");
 
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
@@ -53,7 +54,10 @@ export default function AdminPanelFirebase() {
   const [editingCategoryIconUrl, setEditingCategoryIconUrl] = useState("");
   const [editingCategoryItemsBgUrl, setEditingCategoryItemsBgUrl] =
     useState("");
-  const [editingCategoryIntermediateImageUrl, setEditingCategoryIntermediateImageUrl] = useState("");
+  const [
+    editingCategoryIntermediateImageUrl,
+    setEditingCategoryIntermediateImageUrl,
+  ] = useState("");
 
   const [selectedCatId, setSelectedCatId] = useState("");
   const [itemNameHy, setItemNameHy] = useState("");
@@ -105,10 +109,14 @@ export default function AdminPanelFirebase() {
 
   const saveGlobalSettings = async () => {
     setIsUploading(true);
-    await setDoc(doc(db, "settings", "global"), { 
-      topImageUrl: globalTopImageUrl,
-      logoUrl: globalLogoUrl
-    }, { merge: true });
+    await setDoc(
+      doc(db, "settings", "global"),
+      {
+        topImageUrl: globalTopImageUrl,
+        logoUrl: globalLogoUrl,
+      },
+      { merge: true },
+    );
     setIsUploading(false);
     showToast("✅ Գլխավոր կարգավորումները պահպանվեցին։");
   };
@@ -232,7 +240,9 @@ export default function AdminPanelFirebase() {
           (itemNameEn && item.nameEn === itemNameEn),
       );
       if (isDuplicate) {
-            showToast("❌ Այս անվանումով ապրանք արդեն գոյություն ունի ընտրված բաժնում։");
+        showToast(
+          "❌ Այս անվանումով ապրանք արդեն գոյություն ունի ընտրված բաժնում։",
+        );
         return;
       }
     }
@@ -327,12 +337,22 @@ export default function AdminPanelFirebase() {
 
   // -- Bulk Actions Logic --
   const isItemSelected = (catId, item) => {
-    return selectedItems.some((si) => si.catId === catId && si.original.nameHy === item.nameHy && si.original.nameEn === item.nameEn);
+    return selectedItems.some(
+      (si) =>
+        si.catId === catId &&
+        si.original.nameHy === item.nameHy &&
+        si.original.nameEn === item.nameEn,
+    );
   };
 
   const toggleItemSelection = (catId, item) => {
     setSelectedItems((prev) => {
-      const exists = prev.find((si) => si.catId === catId && si.original.nameHy === item.nameHy && si.original.nameEn === item.nameEn);
+      const exists = prev.find(
+        (si) =>
+          si.catId === catId &&
+          si.original.nameHy === item.nameHy &&
+          si.original.nameEn === item.nameEn,
+      );
       if (exists) {
         return prev.filter((si) => si !== exists);
       } else {
@@ -342,7 +362,11 @@ export default function AdminPanelFirebase() {
   };
 
   const askBulkDelete = () => {
-    setConfirmDelete({ visible: true, type: "bulkItems", payload: selectedItems });
+    setConfirmDelete({
+      visible: true,
+      type: "bulkItems",
+      payload: selectedItems,
+    });
   };
 
   const handleBulkMove = async () => {
@@ -356,7 +380,13 @@ export default function AdminPanelFirebase() {
       selectedItems.forEach((si) => {
         const cat = newMenu.find((c) => c.id === si.catId);
         if (cat && cat.id !== bulkTargetCatId) {
-          cat.items = cat.items.filter((item) => !(item.nameHy === si.original.nameHy && item.nameEn === si.original.nameEn));
+          cat.items = cat.items.filter(
+            (item) =>
+              !(
+                item.nameHy === si.original.nameHy &&
+                item.nameEn === si.original.nameEn
+              ),
+          );
         }
       });
 
@@ -367,7 +397,7 @@ export default function AdminPanelFirebase() {
           const exists = targetCat.items.some(
             (existing) =>
               (newItem.nameHy && existing.nameHy === newItem.nameHy) ||
-              (newItem.nameEn && existing.nameEn === newItem.nameEn)
+              (newItem.nameEn && existing.nameEn === newItem.nameEn),
           );
           if (!exists) {
             targetCat.items.push(newItem);
@@ -415,7 +445,13 @@ export default function AdminPanelFirebase() {
       itemsToDelete.forEach((si) => {
         const cat = newMenu.find((c) => c.id === si.catId);
         if (cat) {
-          cat.items = cat.items.filter((item) => !(item.nameHy === si.original.nameHy && item.nameEn === si.original.nameEn));
+          cat.items = cat.items.filter(
+            (item) =>
+              !(
+                item.nameHy === si.original.nameHy &&
+                item.nameEn === si.original.nameEn
+              ),
+          );
         }
       });
 
@@ -661,7 +697,9 @@ export default function AdminPanelFirebase() {
           }
         }
         const totalSkipped = duplicateInternal + duplicateFirebase;
-        showToast(`Ներմուծումն ավարտվեց։\n✅ Ավելացվել է: ${addedCount} ապրանք\n❌ Մերժվել է: ${totalSkipped} կրկնօրինակ`);
+        showToast(
+          `Ներմուծումն ավարտվեց։\n✅ Ավելացվել է: ${addedCount} ապրանք\n❌ Մերժվել է: ${totalSkipped} կրկնօրինակ`,
+        );
         loadMenu();
       } catch (error) {
         console.error("Ներմուծման սխալ:", error);
@@ -675,12 +713,17 @@ export default function AdminPanelFirebase() {
   };
 
   // -- Image Upload Handler --
-  const handleFileUpload = async (e, setUrlCallback, folderPath, aspect = null) => {
+  const handleFileUpload = async (
+    e,
+    setUrlCallback,
+    folderPath,
+    aspect = null,
+  ) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Եթե ֆայլը GIF է, բաց ենք թողնում կտրելու (crop) փուլը, որպեսզի անիմացիան չկորչի
-    if (file.type === "image/gif") {
+    // Եթե ֆայլը GIF կամ SVG է, բաց ենք թողնում կտրելու (crop) փուլը
+    if (file.type === "image/gif" || file.type === "image/svg+xml") {
       setIsUploading(true);
       try {
         const storage = getStorage();
@@ -692,8 +735,10 @@ export default function AdminPanelFirebase() {
         const url = await getDownloadURL(fileRef);
         setUrlCallback(url);
       } catch (error) {
-        console.error("GIF վերբեռնման սխալ:", error);
-        alert("GIF-ի վերբեռնումը ձախողվեց։ Համոզվեք որ Firebase Storage-ը միացված է։");
+        console.error("Վերբեռնման սխալ:", error);
+        alert(
+          "Վերբեռնումը ձախողվեց։ Համոզվեք որ Firebase Storage-ը միացված է։",
+        );
       } finally {
         setIsUploading(false);
         e.target.value = null;
@@ -710,6 +755,7 @@ export default function AdminPanelFirebase() {
         folderPath,
         aspect,
         fileName: file.name,
+        fileType: file.type, // Պահպանում ենք օրիգինալ տիպը (օր.՝ image/png) թափանցիկության համար
       });
     };
     reader.readAsDataURL(file);
@@ -803,77 +849,105 @@ export default function AdminPanelFirebase() {
         }}
       >
         <h3>Գլխավոր կարգավորումներ</h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-        <div>
-          <div style={{ fontSize: "0.85rem", color: "#666", marginBottom: "4px" }}>
-            <strong>🌌 Գլխավոր Բաններ:</strong> Ցուցադրվում է էջի ամենավերևում (16:9)
-          </div>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <input
-              placeholder="Լոգոյի վերևի նկարի URL"
-              value={globalTopImageUrl}
-              onChange={(e) => setGlobalTopImageUrl(e.target.value)}
-              style={{ flex: 1, margin: 0 }}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload(e, setGlobalTopImageUrl, "settings", 16 / 9)}
-              disabled={isUploading}
-            />
-            {globalTopImageUrl && (
-              <img
-                src={globalTopImageUrl}
-                alt="Top Banner"
-                style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 4 }}
+        <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+          <div>
+            <div
+              style={{
+                fontSize: "0.85rem",
+                color: "#666",
+                marginBottom: "4px",
+              }}
+            >
+              <strong>🌌 Գլխավոր Բաններ:</strong> Ցուցադրվում է էջի ամենավերևում
+              (16:9)
+            </div>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <input
+                placeholder="Լոգոյի վերևի նկարի URL"
+                value={globalTopImageUrl}
+                onChange={(e) => setGlobalTopImageUrl(e.target.value)}
+                style={{ flex: 1, margin: 0 }}
               />
-            )}
-          </div>
-        </div>
-        
-        <div>
-          <div style={{ fontSize: "0.85rem", color: "#666", marginBottom: "4px" }}>
-            <strong>💠 Գլխավոր Լոգո:</strong> Խանութի լոգոն վերևի մասում (ազատ չափ կամ 1:1)
-          </div>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <input
-              placeholder="Գլխավոր լոգոյի URL (կփոխարինի logo.jpg-ին)"
-              value={globalLogoUrl}
-              onChange={(e) => setGlobalLogoUrl(e.target.value)}
-              style={{ flex: 1, margin: 0 }}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload(e, setGlobalLogoUrl, "settings", null)} // null = ազատ կտրում (freeform aspect ratio)
-              disabled={isUploading}
-            />
-            {globalLogoUrl && (
-              <img
-                src={globalLogoUrl}
-                alt="Main Logo"
-                style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 4 }}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleFileUpload(e, setGlobalTopImageUrl, "settings", 16 / 9)
+                }
+                disabled={isUploading}
               />
-            )}
+              {globalTopImageUrl && (
+                <img
+                  src={globalTopImageUrl}
+                  alt="Top Banner"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    objectFit: "cover",
+                    borderRadius: 4,
+                  }}
+                />
+              )}
+            </div>
           </div>
-        </div>
 
-        <button
-          onClick={saveGlobalSettings}
-          disabled={isUploading}
-          style={{
-            padding: "8px 16px",
-            background: "#4CAF50",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: isUploading ? "wait" : "pointer",
-            alignSelf: "flex-start"
-          }}
-        >
-          {isUploading ? "Պահպանվում է..." : "Պահպանել"}
-        </button>
-      </div>
+          <div>
+            <div
+              style={{
+                fontSize: "0.85rem",
+                color: "#666",
+                marginBottom: "4px",
+              }}
+            >
+              <strong>💠 Գլխավոր Լոգո:</strong> Խանութի լոգոն վերևի մասում (ազատ
+              չափ կամ 1:1)
+            </div>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <input
+                placeholder="Գլխավոր լոգոյի URL (կփոխարինի logo.jpg-ին)"
+                value={globalLogoUrl}
+                onChange={(e) => setGlobalLogoUrl(e.target.value)}
+                style={{ flex: 1, margin: 0 }}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleFileUpload(e, setGlobalLogoUrl, "settings", null)
+                } // null = ազատ կտրում (freeform aspect ratio)
+                disabled={isUploading}
+              />
+              {globalLogoUrl && (
+                <img
+                  src={globalLogoUrl}
+                  alt="Main Logo"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    objectFit: "contain",
+                    borderRadius: 4,
+                  }}
+                />
+              )}
+            </div>
+          </div>
+
+          <button
+            onClick={saveGlobalSettings}
+            disabled={isUploading}
+            style={{
+              padding: "8px 16px",
+              background: "#4CAF50",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: isUploading ? "wait" : "pointer",
+              alignSelf: "flex-start",
+            }}
+          >
+            {isUploading ? "Պահպանվում է..." : "Պահպանել"}
+          </button>
+        </div>
       </div>
 
       <CategoryForm
@@ -893,12 +967,16 @@ export default function AdminPanelFirebase() {
         editingCategoryNameEn={editingCategoryNameEn}
         editingCategoryIconUrl={editingCategoryIconUrl}
         editingCategoryItemsBgUrl={editingCategoryItemsBgUrl}
-        editingCategoryIntermediateImageUrl={editingCategoryIntermediateImageUrl}
+        editingCategoryIntermediateImageUrl={
+          editingCategoryIntermediateImageUrl
+        }
         setEditingCategoryName={setEditingCategoryName}
         setEditingCategoryNameEn={setEditingCategoryNameEn}
         setEditingCategoryIconUrl={setEditingCategoryIconUrl}
         setEditingCategoryItemsBgUrl={setEditingCategoryItemsBgUrl}
-        setEditingCategoryIntermediateImageUrl={setEditingCategoryIntermediateImageUrl}
+        setEditingCategoryIntermediateImageUrl={
+          setEditingCategoryIntermediateImageUrl
+        }
         editCategory={editCategory}
         cancelCategoryEdit={cancelCategoryEdit}
         handleFileUpload={handleFileUpload}
@@ -1070,7 +1148,12 @@ export default function AdminPanelFirebase() {
                     checked={isItemSelected(sec.id, item)}
                     onChange={() => toggleItemSelection(sec.id, item)}
                     onClick={(e) => e.stopPropagation()}
-                    style={{ width: "18px", height: "18px", cursor: "pointer", margin: "0 10px 0 0" }}
+                    style={{
+                      width: "18px",
+                      height: "18px",
+                      cursor: "pointer",
+                      margin: "0 10px 0 0",
+                    }}
                   />
                   {item.imageUrl && (
                     <img
@@ -1120,8 +1203,8 @@ export default function AdminPanelFirebase() {
             confirmDelete.type === "category"
               ? "Դուք ցանկանում եք ջնջել այս բաժինը?"
               : confirmDelete.type === "bulkItems"
-              ? `Դուք ցանկանում եք ջնջել ընտրված ${confirmDelete.payload?.length} ապրանքները?`
-              : "Դուք ցանկանում եք ջնջել այս կետը?"
+                ? `Դուք ցանկանում եք ջնջել ընտրված ${confirmDelete.payload?.length} ապրանքները?`
+                : "Դուք ցանկանում եք ջնջել այս կետը?"
           }
           onConfirm={handleConfirmDelete}
           onCancel={handleCancelDelete}
@@ -1132,6 +1215,7 @@ export default function AdminPanelFirebase() {
         <ImageCropperModal
           src={cropData.src}
           aspect={cropData.aspect}
+          fileType={cropData.fileType}
           onCropConfirm={handleCropConfirm}
           onCancel={handleCropCancel}
         />
@@ -1156,14 +1240,23 @@ export default function AdminPanelFirebase() {
             width: "90%",
             maxWidth: "600px",
             flexWrap: "wrap",
-            justifyContent: "center"
+            justifyContent: "center",
           }}
         >
-          <strong style={{ whiteSpace: "nowrap" }}>Ընտրված է: {selectedItems.length}</strong>
+          <strong style={{ whiteSpace: "nowrap" }}>
+            Ընտրված է: {selectedItems.length}
+          </strong>
           <select
             value={bulkTargetCatId}
             onChange={(e) => setBulkTargetCatId(e.target.value)}
-            style={{ flex: 1, minWidth: "120px", padding: "8px", borderRadius: "6px", border: "1px solid #ccc", margin: 0 }}
+            style={{
+              flex: 1,
+              minWidth: "120px",
+              padding: "8px",
+              borderRadius: "6px",
+              border: "1px solid #ccc",
+              margin: 0,
+            }}
           >
             <option value="">-- Տեղափոխել --</option>
             {menu.map((c) => (
@@ -1181,8 +1274,9 @@ export default function AdminPanelFirebase() {
               color: "white",
               border: "none",
               borderRadius: "6px",
-              cursor: (!bulkTargetCatId || isUploading) ? "not-allowed" : "pointer",
-              margin: 0
+              cursor:
+                !bulkTargetCatId || isUploading ? "not-allowed" : "pointer",
+              margin: 0,
             }}
           >
             Տեղափոխել
@@ -1196,7 +1290,7 @@ export default function AdminPanelFirebase() {
               border: "none",
               borderRadius: "6px",
               cursor: "pointer",
-              margin: 0
+              margin: 0,
             }}
           >
             Ջնջել
@@ -1216,7 +1310,7 @@ export default function AdminPanelFirebase() {
               alignItems: "center",
               justifyContent: "center",
               margin: 0,
-              padding: "8px"
+              padding: "8px",
             }}
             title="Չեղարկել"
           >
@@ -1238,7 +1332,7 @@ export default function AdminPanelFirebase() {
             boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
             zIndex: 10000,
             whiteSpace: "pre-line",
-            fontSize: "16px"
+            fontSize: "16px",
           }}
         >
           {toastMessage}

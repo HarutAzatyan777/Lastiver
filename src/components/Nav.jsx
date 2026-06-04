@@ -1,6 +1,6 @@
 // components/Nav.jsx
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "../styles/Nav.css";
 
 export default function Nav({ categories }) {
@@ -12,6 +12,16 @@ export default function Nav({ categories }) {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [isDragging, setIsDragging] = useState(false); // Որպեսզի drag անելիս click չլինի
+  const [isSticky, setIsSticky] = useState(false);
+
+  // Հետևում ենք scroll-ին, որպեսզի մենյուն դարձնենք ֆիքսված վերևում
+  useEffect(() => {
+    const handleScrollEvent = () => {
+      setIsSticky(window.scrollY > 200); // 200px-ից հետո դառնում է sticky
+    };
+    window.addEventListener("scroll", handleScrollEvent);
+    return () => window.removeEventListener("scroll", handleScrollEvent);
+  }, []);
 
   const handleScroll = (slug) => {
     if (isDragging) return; // Եթե քաշում էինք (drag), ապա click-ը արհամարհում ենք
@@ -47,7 +57,7 @@ export default function Nav({ categories }) {
   };
 
   return (
-    <nav className="qr-nav">
+    <nav className={`qr-nav ${isSticky ? "sticky" : ""}`}>
       <div className="qr-nav-wrapper">
         <div
           className={`qr-nav-buttons ${isDown ? "dragging" : ""}`}
@@ -57,13 +67,33 @@ export default function Nav({ categories }) {
           onMouseUp={handleMouseLeaveOrUp}
           onMouseMove={handleMouseMove}
         >
-          {categories.map(({ name, slug }) => (
+          {categories.map(({ name, slug, iconUrl }) => (
             <button
               key={slug}
               onClick={() => handleScroll(slug)}
               className={`qr-nav-button ${activeSlug === slug ? "active" : ""}`}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px",
+              }}
             >
-              {name}
+              {iconUrl && (
+                <img
+                  src={iconUrl}
+                  alt={name}
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    objectFit: "contain",
+                    pointerEvents: "none", // Կանխում է նկարը քաշելիս խանգարելը
+                  }}
+                />
+              )}
+              <span className="nav-item-text" style={{ pointerEvents: "none" }}>
+                {name}
+              </span>
             </button>
           ))}
         </div>
