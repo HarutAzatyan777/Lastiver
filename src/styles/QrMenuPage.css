@@ -3,10 +3,10 @@
 
 /* Define main colors as CSS variables */
 :root {
-  --primary-color: #5b4b8a;
-  --primary-light: #a79cd9;
+  --primary-color: #18AD9F;
+  --primary-light: #55b1a8;
   --bg-soft: #f4f1fa;
-  --border-light: #dcd6ec;
+  --border-light: #678933;
   --text-color: #2e3d49;
   --muted-text: #7b8a8e;
 }
