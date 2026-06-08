@@ -12,7 +12,17 @@ import "../styles/QrMenuPage.css";
 import Nav from "../components/Nav";
 import ScrollToTop from "../components/ScrollToTop";
 import Skeleton from "./Skeleton";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import {
+  FaChevronDown,
+  FaChevronUp,
+  FaBed,
+  FaMountain,
+  FaSwimmer,
+  FaUtensils,
+  FaCamera,
+  FaMapMarkerAlt,
+  FaMobileAlt,
+} from "react-icons/fa";
 
 /* ----- Օգնական ֆունկցիա slugify-ի համար ----- */
 function slugify(text) {
@@ -283,15 +293,22 @@ export default function QrMenuPage() {
         <p>Lastiver</p>
         <p>
           <em>
-            Relax and recharge with us
+            <FaBed /> Comfortable stylish rooms
             <br />
-            ▫️Restaurant / Pool / Bar
+            <FaMountain /> Stunning view
             <br />
-            ▫️Every day 10:00-22:00
+            <FaSwimmer /> Heated outdoor pool
+            <br />
+            <FaUtensils /> Tasty restaurant
+            <br />
+            <FaCamera /> Armenian costumes
           </em>
         </p>
         <p>
-          <strong>Երևան-Աշտարակ մայրուղի ձախ ափ 17/1, Ashtarak, Armenia</strong>
+          <strong>
+            <FaMapMarkerAlt /> Yenoqavan &nbsp;&nbsp; <FaMobileAlt /> (+374) 33
+            292 999
+          </strong>
         </p>
         <ScrollToTop />
       </div>
