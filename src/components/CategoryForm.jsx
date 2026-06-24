@@ -11,11 +11,13 @@ import {
 export default function CategoryForm({
   category,
   categoryEn,
+  categoryRu,
   categoryIconUrl,
   categoryItemsBgUrl,
   categoryIntermediateImageUrl,
   setCategory,
   setCategoryEn,
+  setCategoryRu,
   setCategoryIconUrl,
   setCategoryItemsBgUrl,
   setCategoryIntermediateImageUrl,
@@ -23,11 +25,13 @@ export default function CategoryForm({
   editingCategory,
   editingCategoryName,
   editingCategoryNameEn,
+  editingCategoryNameRu,
   editingCategoryIconUrl,
   editingCategoryItemsBgUrl,
   editingCategoryIntermediateImageUrl,
   setEditingCategoryName,
   setEditingCategoryNameEn,
+  setEditingCategoryNameRu,
   setEditingCategoryIconUrl,
   setEditingCategoryItemsBgUrl,
   setEditingCategoryIntermediateImageUrl,
@@ -37,11 +41,11 @@ export default function CategoryForm({
   isUploading,
 }) {
   // Google Translate-ի ավտոմատ թարգմանման ֆունկցիա
-  const autoTranslate = async (text, setter) => {
+  const autoTranslate = async (text, setter, targetLang = "en") => {
     if (!text) return;
     try {
       const res = await fetch(
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=hy&tl=en&dt=t&q=${encodeURIComponent(text)}`,
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=hy&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`,
       );
       const data = await res.json();
       if (data && data[0] && data[0][0] && data[0][0][0]) {
@@ -56,16 +60,16 @@ export default function CategoryForm({
     <div>
       <div style={{ marginBottom: "20px" }}>
         <h3>Ավելացնել նոր բաժին</h3>
-        <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "10px", flexWrap: "wrap" }}>
           <input
             placeholder="Բաժին (Հայերեն)"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            style={{ flex: 1, margin: 0 }}
+            style={{ flex: 1, minWidth: "150px", margin: 0 }}
           />
           <button
             type="button"
-            onClick={() => autoTranslate(category, setCategoryEn)}
+            onClick={() => autoTranslate(category, setCategoryEn, "en")}
             style={{
               padding: "0 10px",
               cursor: "pointer",
@@ -81,7 +85,27 @@ export default function CategoryForm({
             placeholder="Category (English)"
             value={categoryEn}
             onChange={(e) => setCategoryEn(e.target.value)}
-            style={{ flex: 1, margin: 0 }}
+            style={{ flex: 1, minWidth: "150px", margin: 0 }}
+          />
+          <button
+            type="button"
+            onClick={() => autoTranslate(category, setCategoryRu, "ru")}
+            style={{
+              padding: "0 10px",
+              cursor: "pointer",
+              background: "#f0f0f0",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
+            title="Ավտոմատ թարգմանել ռուսերեն"
+          >
+            <FaLanguage size={20} color="#0056b3" />
+          </button>
+          <input
+            placeholder="Категория (Русский)"
+            value={categoryRu}
+            onChange={(e) => setCategoryRu(e.target.value)}
+            style={{ flex: 1, minWidth: "150px", margin: 0 }}
           />
         </div>
         <div
@@ -319,17 +343,17 @@ export default function CategoryForm({
             <p style={{ color: "red" }}>
               Խմբագրում ես: <strong>{editingCategory.category}</strong>
             </p>
-            <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+            <div style={{ display: "flex", gap: "10px", marginBottom: "10px", flexWrap: "wrap" }}>
               <input
                 placeholder="Բաժին (Հայերեն)"
                 value={editingCategoryName}
                 onChange={(e) => setEditingCategoryName(e.target.value)}
-                style={{ flex: 1, margin: 0 }}
+                style={{ flex: 1, minWidth: "120px", margin: 0 }}
               />
               <button
                 type="button"
                 onClick={() =>
-                  autoTranslate(editingCategoryName, setEditingCategoryNameEn)
+                  autoTranslate(editingCategoryName, setEditingCategoryNameEn, "en")
                 }
                 style={{
                   padding: "0 10px",
@@ -346,7 +370,29 @@ export default function CategoryForm({
                 placeholder="Category (English)"
                 value={editingCategoryNameEn}
                 onChange={(e) => setEditingCategoryNameEn(e.target.value)}
-                style={{ flex: 1, margin: 0 }}
+                style={{ flex: 1, minWidth: "120px", margin: 0 }}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  autoTranslate(editingCategoryName, setEditingCategoryNameRu, "ru")
+                }
+                style={{
+                  padding: "0 10px",
+                  cursor: "pointer",
+                  background: "#f0f0f0",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                }}
+                title="Ավտոմատ թարգմանել ռուսերեն"
+              >
+                <FaLanguage size={20} color="#0056b3" />
+              </button>
+              <input
+                placeholder="Категория (Русский)"
+                value={editingCategoryNameRu}
+                onChange={(e) => setEditingCategoryNameRu(e.target.value)}
+                style={{ flex: 1, minWidth: "120px", margin: 0 }}
               />
             </div>
             <div

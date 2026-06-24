@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState, useEffect, useRef } from "react";
 import * as XLSX from "xlsx";
 import {
@@ -35,6 +36,7 @@ import {
   FaFileImport,
   FaSpinner,
   FaTimes,
+  FaLanguage,
 } from "react-icons/fa";
 
 const menuRef = collection(db, "menu");
@@ -43,6 +45,7 @@ export default function AdminPanelFirebase() {
   const [menu, setMenu] = useState([]);
   const [category, setCategory] = useState("");
   const [categoryEn, setCategoryEn] = useState("");
+  const [categoryRu, setCategoryRu] = useState("");
   const [categoryIconUrl, setCategoryIconUrl] = useState("");
   const [categoryItemsBgUrl, setCategoryItemsBgUrl] = useState("");
   const [categoryIntermediateImageUrl, setCategoryIntermediateImageUrl] =
@@ -51,6 +54,7 @@ export default function AdminPanelFirebase() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
   const [editingCategoryNameEn, setEditingCategoryNameEn] = useState("");
+  const [editingCategoryNameRu, setEditingCategoryNameRu] = useState("");
   const [editingCategoryIconUrl, setEditingCategoryIconUrl] = useState("");
   const [editingCategoryItemsBgUrl, setEditingCategoryItemsBgUrl] =
     useState("");
@@ -62,6 +66,7 @@ export default function AdminPanelFirebase() {
   const [selectedCatId, setSelectedCatId] = useState("");
   const [itemNameHy, setItemNameHy] = useState("");
   const [itemNameEn, setItemNameEn] = useState("");
+  const [itemNameRu, setItemNameRu] = useState("");
   const [itemPrice, setItemPrice] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [editingItem, setEditingItem] = useState(null);
@@ -85,6 +90,94 @@ export default function AdminPanelFirebase() {
   const [globalLogoUrl, setGlobalLogoUrl] = useState("");
   const [selectedItems, setSelectedItems] = useState([]);
   const [bulkTargetCatId, setBulkTargetCatId] = useState("");
+  const [isTranslatingRu, setIsTranslatingRu] = useState(false);
+  const [translationProgress, setTranslationProgress] = useState("");
+
+  const translateDatabaseToRussian = async () => {
+    if (!window.confirm("Դուք ցանկանո՞ւմ եք ավտոմատ թարգմանել բոլոր բացակայող ռուսերեն անվանումները (բաժիններ և ապրանքներ)։")) {
+      return;
+    }
+    setIsTranslatingRu(true);
+    setTranslationProgress("Մեկնարկում է...");
+
+    const autoTranslateText = async (text, targetLang = "ru") => {
+      if (!text) return "";
+      try {
+        const res = await fetch(
+          `https://translate.googleapis.com/translate_a/single?client=gtx&sl=hy&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`,
+        );
+        const data = await res.json();
+        if (data && data[0] && data[0][0] && data[0][0][0]) {
+          return data[0][0][0];
+        }
+      } catch (e) {
+        console.error("Թարգմանության սխալ:", e);
+      }
+      return "";
+    };
+
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    try {
+      let updatedCount = 0;
+      let totalCategories = menu.length;
+
+      for (let i = 0; i < totalCategories; i++) {
+        const cat = menu[i];
+        setTranslationProgress(`Թարգմանվում է բաժին ${i + 1}/${totalCategories}՝ ${cat.category}...`);
+        
+        let needsUpdate = false;
+        let categoryRuVal = cat.categoryRu || "";
+        
+        if (!categoryRuVal && cat.category) {
+          categoryRuVal = await autoTranslateText(cat.category, "ru");
+          await delay(200); // Prevent rate limiting
+          if (categoryRuVal) {
+            needsUpdate = true;
+          }
+        }
+
+        const updatedItems = [];
+        const items = cat.items || [];
+        for (let j = 0; j < items.length; j++) {
+          const item = items[j];
+          let itemRuName = item.nameRu || "";
+          if (!itemRuName && item.nameHy) {
+            setTranslationProgress(
+              `Թարգմանվում է բաժին ${i + 1}/${totalCategories} - ապրանք ${j + 1}/${items.length}՝ ${item.nameHy}...`
+            );
+            itemRuName = await autoTranslateText(item.nameHy, "ru");
+            await delay(200); // Prevent rate limiting
+            if (itemRuName) {
+              needsUpdate = true;
+            }
+          }
+          updatedItems.push({
+            ...item,
+            nameRu: itemRuName,
+          });
+        }
+
+        if (needsUpdate) {
+          const ref = doc(db, "menu", cat.id);
+          await updateDoc(ref, {
+            categoryRu: categoryRuVal,
+            items: updatedItems,
+          });
+          updatedCount++;
+        }
+      }
+
+      showToast(`✅ Թարգմանությունն ավարտվեց։ Թարմացվել է ${updatedCount} բաժին։`);
+      loadMenu();
+    } catch (err) {
+      console.error(err);
+      showToast("❌ Սխալ թարգմանության ժամանակ։");
+    } finally {
+      setIsTranslatingRu(false);
+      setTranslationProgress("");
+    }
+  };
 
   const loadMenu = async () => {
     const snapshot = await getDocs(menuRef);
@@ -147,6 +240,7 @@ export default function AdminPanelFirebase() {
     await addDoc(menuRef, {
       category,
       categoryEn,
+      categoryRu,
       iconUrl: categoryIconUrl,
       itemsBackgroundUrl: categoryItemsBgUrl,
       intermediateImageUrl: categoryIntermediateImageUrl,
@@ -155,6 +249,7 @@ export default function AdminPanelFirebase() {
     });
     setCategory("");
     setCategoryEn("");
+    setCategoryRu("");
     setCategoryIconUrl("");
     setCategoryItemsBgUrl("");
     setCategoryIntermediateImageUrl("");
@@ -165,6 +260,7 @@ export default function AdminPanelFirebase() {
     setEditingCategory(cat);
     setEditingCategoryName(cat.category);
     setEditingCategoryNameEn(cat.categoryEn || "");
+    setEditingCategoryNameRu(cat.categoryRu || "");
     setEditingCategoryIconUrl(cat.iconUrl || "");
     setEditingCategoryItemsBgUrl(cat.itemsBackgroundUrl || "");
     setEditingCategoryIntermediateImageUrl(cat.intermediateImageUrl || "");
@@ -176,6 +272,7 @@ export default function AdminPanelFirebase() {
     await updateDoc(ref, {
       category: editingCategoryName,
       categoryEn: editingCategoryNameEn,
+      categoryRu: editingCategoryNameRu,
       iconUrl: editingCategoryIconUrl,
       itemsBackgroundUrl: editingCategoryItemsBgUrl,
       intermediateImageUrl: editingCategoryIntermediateImageUrl,
@@ -183,6 +280,7 @@ export default function AdminPanelFirebase() {
     setEditingCategory(null);
     setEditingCategoryName("");
     setEditingCategoryNameEn("");
+    setEditingCategoryNameRu("");
     setEditingCategoryIconUrl("");
     setEditingCategoryItemsBgUrl("");
     setEditingCategoryIntermediateImageUrl("");
@@ -193,6 +291,7 @@ export default function AdminPanelFirebase() {
     setEditingCategory(null);
     setEditingCategoryName("");
     setEditingCategoryNameEn("");
+    setEditingCategoryNameRu("");
     setEditingCategoryIconUrl("");
     setEditingCategoryItemsBgUrl("");
     setEditingCategoryIntermediateImageUrl("");
@@ -230,14 +329,15 @@ export default function AdminPanelFirebase() {
 
   // -- Item --
   const addItem = async () => {
-    if ((!itemNameHy && !itemNameEn) || !itemPrice || !selectedCatId) return;
+    if ((!itemNameHy && !itemNameEn && !itemNameRu) || !itemPrice || !selectedCatId) return;
 
     const categoryToUpdate = menu.find((cat) => cat.id === selectedCatId);
     if (categoryToUpdate && categoryToUpdate.items) {
       const isDuplicate = categoryToUpdate.items.some(
         (item) =>
           (itemNameHy && item.nameHy === itemNameHy) ||
-          (itemNameEn && item.nameEn === itemNameEn),
+          (itemNameEn && item.nameEn === itemNameEn) ||
+          (itemNameRu && item.nameRu === itemNameRu),
       );
       if (isDuplicate) {
         showToast(
@@ -252,12 +352,14 @@ export default function AdminPanelFirebase() {
       items: arrayUnion({
         nameHy: itemNameHy,
         nameEn: itemNameEn,
+        nameRu: itemNameRu,
         price: itemPrice,
         imageUrl: imageUrl,
       }),
     });
     setItemNameHy("");
     setItemNameEn("");
+    setItemNameRu("");
     setItemPrice("");
     setImageUrl("");
     loadMenu();
@@ -268,6 +370,7 @@ export default function AdminPanelFirebase() {
     setSelectedCatId(catId);
     setItemNameHy(item.nameHy || "");
     setItemNameEn(item.nameEn || "");
+    setItemNameRu(item.nameRu || "");
     setItemPrice(item.price);
     setImageUrl(item.imageUrl || "");
     setEditingItem({ original: item, index: idx });
@@ -283,6 +386,7 @@ export default function AdminPanelFirebase() {
           ? {
               nameHy: itemNameHy,
               nameEn: itemNameEn,
+              nameRu: itemNameRu,
               price: itemPrice,
               imageUrl: imageUrl,
             }
@@ -292,6 +396,7 @@ export default function AdminPanelFirebase() {
     setEditingItem(null);
     setItemNameHy("");
     setItemNameEn("");
+    setItemNameRu("");
     setItemPrice("");
     setImageUrl("");
     loadMenu();
@@ -301,6 +406,7 @@ export default function AdminPanelFirebase() {
     setEditingItem(null);
     setItemNameHy("");
     setItemNameEn("");
+    setItemNameRu("");
     setItemPrice("");
     setImageUrl("");
   };
@@ -626,11 +732,19 @@ export default function AdminPanelFirebase() {
             row["անուն (հայ)"] ||
             row["հայերեն"] ||
             "";
+          const nameRuVal =
+            row["nameru"] ||
+            row["name (ru)"] ||
+            row["անուն (ռուս)"] ||
+            row["ռուսերեն"] ||
+            row["russian"] ||
+            "";
 
           const isDuplicate = groupedData[cat].some(
             (item) =>
               (nameHyVal && item.nameHy === nameHyVal) ||
-              (nameEnVal && item.nameEn === nameEnVal),
+              (nameEnVal && item.nameEn === nameEnVal) ||
+              (nameRuVal && item.nameRu === nameRuVal),
           );
 
           if (isDuplicate) {
@@ -639,6 +753,7 @@ export default function AdminPanelFirebase() {
             groupedData[cat].push({
               nameEn: nameEnVal,
               nameHy: nameHyVal,
+              nameRu: nameRuVal,
               price: row["price"] || row["գին"] || "",
               imageUrl: row["imageurl"] || row["նկարի հղում"] || "",
             });
@@ -669,7 +784,8 @@ export default function AdminPanelFirebase() {
               return !(existingCat.items || []).some(
                 (existingItem) =>
                   (newItem.nameHy && existingItem.nameHy === newItem.nameHy) ||
-                  (newItem.nameEn && existingItem.nameEn === newItem.nameEn),
+                  (newItem.nameEn && existingItem.nameEn === newItem.nameEn) ||
+                  (newItem.nameRu && existingItem.nameRu === newItem.nameRu),
               );
             });
 
@@ -688,6 +804,8 @@ export default function AdminPanelFirebase() {
             highestOrder++;
             await addDoc(menuRef, {
               category: catName,
+              categoryEn: "",
+              categoryRu: "",
               iconUrl: "",
               itemsBackgroundUrl: "",
               intermediateImageUrl: "",
@@ -801,7 +919,12 @@ export default function AdminPanelFirebase() {
         }}
       >
         <h2 style={{ margin: 0 }}>Admin Panel</h2>
-        <div>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+          {isTranslatingRu && (
+            <span style={{ fontSize: "0.85rem", color: "#0056b3", display: "flex", alignItems: "center", gap: "6px" }}>
+              <FaSpinner className="spin" /> {translationProgress}
+            </span>
+          )}
           <input
             type="file"
             accept=".xlsx, .xls, .csv"
@@ -811,14 +934,15 @@ export default function AdminPanelFirebase() {
           />
           <button
             onClick={() => fileInputRef.current && fileInputRef.current.click()}
-            disabled={isImporting}
+            disabled={isImporting || isTranslatingRu}
             style={{
               padding: "8px 16px",
-              cursor: isImporting ? "wait" : "pointer",
+              cursor: (isImporting || isTranslatingRu) ? "wait" : "pointer",
               backgroundColor: isImporting ? "#ccc" : "#4CAF50",
               color: "white",
               border: "none",
               borderRadius: "4px",
+              margin: 0,
             }}
           >
             {isImporting ? (
@@ -835,6 +959,37 @@ export default function AdminPanelFirebase() {
               </span>
             )}
           </button>
+
+          {/* 
+          <button
+            onClick={translateDatabaseToRussian}
+            disabled={isTranslatingRu || isImporting}
+            style={{
+              padding: "8px 16px",
+              cursor: (isTranslatingRu || isImporting) ? "wait" : "pointer",
+              backgroundColor: isTranslatingRu ? "#ccc" : "#0056b3",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              margin: 0,
+            }}
+            title="Ավտոմատ թարգմանել բոլոր բացակայող ռուսերեն անունները"
+          >
+            {isTranslatingRu ? (
+              <span
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <FaSpinner className="spin" /> Թարգմանվում է...
+              </span>
+            ) : (
+              <span
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <FaLanguage size={18} /> Թարգմանել Ռուսերեն
+              </span>
+            )}
+          </button>
+          */}
         </div>
       </div>
 
@@ -953,11 +1108,13 @@ export default function AdminPanelFirebase() {
       <CategoryForm
         category={category}
         categoryEn={categoryEn}
+        categoryRu={categoryRu}
         categoryIconUrl={categoryIconUrl}
         categoryItemsBgUrl={categoryItemsBgUrl}
         categoryIntermediateImageUrl={categoryIntermediateImageUrl}
         setCategory={setCategory}
         setCategoryEn={setCategoryEn}
+        setCategoryRu={setCategoryRu}
         setCategoryIconUrl={setCategoryIconUrl}
         setCategoryItemsBgUrl={setCategoryItemsBgUrl}
         setCategoryIntermediateImageUrl={setCategoryIntermediateImageUrl}
@@ -965,6 +1122,7 @@ export default function AdminPanelFirebase() {
         editingCategory={editingCategory}
         editingCategoryName={editingCategoryName}
         editingCategoryNameEn={editingCategoryNameEn}
+        editingCategoryNameRu={editingCategoryNameRu}
         editingCategoryIconUrl={editingCategoryIconUrl}
         editingCategoryItemsBgUrl={editingCategoryItemsBgUrl}
         editingCategoryIntermediateImageUrl={
@@ -972,6 +1130,7 @@ export default function AdminPanelFirebase() {
         }
         setEditingCategoryName={setEditingCategoryName}
         setEditingCategoryNameEn={setEditingCategoryNameEn}
+        setEditingCategoryNameRu={setEditingCategoryNameRu}
         setEditingCategoryIconUrl={setEditingCategoryIconUrl}
         setEditingCategoryItemsBgUrl={setEditingCategoryItemsBgUrl}
         setEditingCategoryIntermediateImageUrl={
@@ -994,6 +1153,8 @@ export default function AdminPanelFirebase() {
           setItemNameHy={setItemNameHy}
           itemNameEn={itemNameEn}
           setItemNameEn={setItemNameEn}
+          itemNameRu={itemNameRu}
+          setItemNameRu={setItemNameRu}
           itemPrice={itemPrice}
           setItemPrice={setItemPrice}
           imageUrl={imageUrl}
@@ -1089,6 +1250,12 @@ export default function AdminPanelFirebase() {
                   / {sec.categoryEn}
                 </span>
               )}
+              {sec.categoryRu && (
+                <span style={{ color: "gray", fontSize: "0.9em" }}>
+                  {" "}
+                  / {sec.categoryRu}
+                </span>
+              )}
             </h3>
             <span className="reorder-buttons">
               <ActionButton
@@ -1168,7 +1335,7 @@ export default function AdminPanelFirebase() {
                     />
                   )}
                   <span style={{ flexGrow: 1 }}>
-                    {item.nameEn} / {item.nameHy} - {item.price} ֏
+                    {item.nameEn} / {item.nameHy} {item.nameRu ? `/ ${item.nameRu}` : ""} - {item.price} ֏
                   </span>
                   <ActionButton
                     onAction={() => moveItemUp(sec.id, idx)}

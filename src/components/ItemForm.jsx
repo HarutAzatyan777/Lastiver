@@ -9,6 +9,8 @@ export default function ItemForm({
   setItemNameHy,
   itemNameEn,
   setItemNameEn,
+  itemNameRu,
+  setItemNameRu,
   itemPrice,
   setItemPrice,
   imageUrl,
@@ -46,6 +48,12 @@ export default function ItemForm({
         placeholder="Անուն (Հայերեն)"
         value={itemNameHy}
         onChange={(e) => setItemNameHy(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="Имя (Русский)"
+        value={itemNameRu}
+        onChange={(e) => setItemNameRu(e.target.value)}
       />
       <input
         type="number"

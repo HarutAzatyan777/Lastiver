@@ -72,6 +72,18 @@ function MenuSection({ section, index }) {
               / {section.categoryEn}
             </span>
           )}
+          {section.categoryRu && (
+            <span
+              style={{
+                fontSize: "0.8em",
+                color: "#666",
+                marginLeft: "8px",
+                fontWeight: "normal",
+              }}
+            >
+              / {section.categoryRu}
+            </span>
+          )}
         </span>
       </div>
 
@@ -117,18 +129,21 @@ function MenuSection({ section, index }) {
                 {item.imageUrl && (
                   <img
                     src={item.imageUrl}
-                    alt={item.nameEn || item.nameHy || "Menu item image"}
+                    alt={item.nameEn || item.nameHy || item.nameRu || "Menu item image"}
                     className="qr-menu-item-image"
                   />
                 )}
                 <div className="qr-menu-item-text">
                   <div className="qr-menu-item-line">
                     <span className="item-name-block">
+                      {item.nameHy && (
+                        <span className="item-name-hy">{item.nameHy}</span>
+                      )}
                       {item.nameEn && (
                         <span className="item-name-en">{item.nameEn}</span>
                       )}
-                      {item.nameHy && (
-                        <span className="item-name-hy">{item.nameHy}</span>
+                      {item.nameRu && (
+                        <span className="item-name-ru">{item.nameRu}</span>
                       )}
                     </span>
                     <strong className="item-price">{item.price} AMD</strong>
